@@ -32,6 +32,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer {
         winColumn = -1;
     }
 
+    @Override
     public String getScore() {
         if (winPiece != ' ') {
             return String.format(PLAYER_S_WINS, winPiece);
@@ -72,7 +73,6 @@ public class TicTacToeGame implements TicTacToeGamePlayer {
         return null;
     }
 
-    @Override
     public Character getNextPiece() {
         Character currentCharacter = nextCharacter;
         nextCharacter = nextCharacter == 'x' ? 'o' : 'x';

@@ -1,7 +1,7 @@
 package com.small.tictactoe;
 
 public interface TicTacToeGamePlayer {
-    Character getNextPiece();
+    String getScore() ;
 
     Character playSquare(int row, int column);
 

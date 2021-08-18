@@ -7,7 +7,7 @@ import java.awt.event.MouseListener;
 
 public class GameBoardPanel extends JPanel implements MouseListener {
     private final GameTile[][] gameTiles = new GameTile[3][3];
-     private  final transient TicTacToeGamePlayer player;
+    private final transient TicTacToeGamePlayer player;
 
     GameBoardPanel(TicTacToeGamePlayer player) {
         this.player = player;
@@ -35,6 +35,25 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 
         drawCrossHatch(g);
     }
+
+//    private void drawWinLine(Graphics g) {
+//        g.setColor(Color.CYAN);
+//        g.fillRect(20, getHeight() / 6 - 10, getWidth() - 40, 20);
+//        g.fillRect(20, (getHeight() / 6) * 3 - 10, getWidth() - 40, 20);
+//        g.fillRect(20, getHeight() / 6 * 5 - 10, getWidth() - 40, 20);
+//
+//        g.fillRect(getWidth() / 6 - 10, 20, 20, getHeight() - 40);
+//        g.fillRect(getWidth() / 6 * 3 - 10, 20, 20, getHeight() - 40);
+//        g.fillRect(getWidth() / 6 * 5 - 10, 20, 20, getHeight() - 40);
+//
+//        int[] x = {10, 30, getWidth() - 10, getWidth() - 30};
+//        int[] y = {30, 10, getHeight() - 30, getHeight() - 10};
+//        g.fillPolygon(new Polygon(x, y, 4));
+//        int[] x1 = {10, 30, getWidth() - 10, getWidth() - 30};
+//        int[] y1 = {getHeight() - 30, getHeight() - 10, 30, 10};
+//        g.fillPolygon(new Polygon(x1, y1, 4));
+//
+//    }
 
     private void drawCrossHatch(Graphics g) {
         g.setColor(Color.BLUE);
@@ -78,9 +97,19 @@ public class GameBoardPanel extends JPanel implements MouseListener {
             gameTiles[row][column].setCurrentValue(xOrO);
             repaint();
 
-            App app = (App)getRootPane().getParent();
+            String score = player.getScore();
+            if (!score.equals("")) {
+                int n = JOptionPane.showConfirmDialog(this,
+                        "Care to try again?",
+                        score,
+                        JOptionPane.YES_NO_OPTION);
 
-            app.getScore();
+                if (n == 0) {
+                    newGame();
+                } else {
+                    System.exit(0);
+                }
+            }
         }
     }
 
