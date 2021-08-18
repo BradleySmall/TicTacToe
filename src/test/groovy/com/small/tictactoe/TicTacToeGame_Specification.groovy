@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021.  Bradley M. Small
+ * All Rights Reserved
+ *
+ */
+
 package com.small.tictactoe
 
 import spock.lang.Specification

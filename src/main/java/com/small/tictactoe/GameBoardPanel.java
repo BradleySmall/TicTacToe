@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021.  Bradley M. Small
+ * All Rights Reserved
+ *
+ */
+
 package com.small.tictactoe;
 
 import javax.swing.*;
@@ -57,11 +63,11 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 
     private void drawCrossHatch(Graphics g) {
         g.setColor(Color.BLUE);
-        g.fillRect((getWidth()) / 3 - 10, 0 + 20, 20, getHeight() - 40);
-        g.fillRect((getWidth()) / 3 * 2 - 10, 0 + 20, 20, getHeight() - 40);
+        g.fillRect((getWidth()) / 3 - 10, 20, 20, getHeight() - 40);
+        g.fillRect((getWidth()) / 3 * 2 - 10, 20, 20, getHeight() - 40);
 
-        g.fillRect(0 + 20, (getHeight()) / 3 - 10, getWidth() - 40, 20);
-        g.fillRect(0 + 20, (getHeight()) / 3 * 2 - 10, getWidth() - 40, 20);
+        g.fillRect(20, (getHeight()) / 3 - 10, getWidth() - 40, 20);
+        g.fillRect(20, (getHeight()) / 3 * 2 - 10, getWidth() - 40, 20);
     }
 
     private void initGUI() {
