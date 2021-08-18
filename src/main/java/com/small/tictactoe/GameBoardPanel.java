@@ -6,48 +6,28 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 public class GameBoardPanel extends JPanel implements MouseListener {
-    Character [][] board;
     private final GameTile[][] gameTiles = new GameTile[3][3];
-    private char nextPiece = 'x';
+     private  final transient TicTacToeGamePlayer player;
 
-    GameBoardPanel() {
+    GameBoardPanel(TicTacToeGamePlayer player) {
+        this.player = player;
         initGUI();
-    }
-    Character[][] getBoard() {
-        Character [][]  board = new Character[3][3];
-        for (int row = 0; row < 3; ++row) {
-            for (int column = 0; column < 3; ++column) {
-                board[row][column] = gameTiles[row][column].getCurrentValue();
-            }
-        }
-        return board;
-    }
-    public void placePiece(char xOrO, int row, int col) {
-        gameTiles[row][col].setCurrentValue(xOrO);
+        newGame();
     }
 
     public void newGame() {
-        nextPiece = 'x';
-
-        for (int row = 0; row < 3; ++row) {
-            for (int column = 0; column < 3; ++column) {
-                placePiece(' ', row, column);
-            }
-        }
+        player.newGame();
+        clearTable();
         repaint();
     }
 
-    public char getNextPiece() {
-        char returnValue = nextPiece;
-
-        if (nextPiece == 'x') {
-            nextPiece = 'o';
-        } else if (nextPiece == 'o') {
-            nextPiece = 'x';
+    private void clearTable() {
+        for (int row = 0; row < 3; ++row) {
+            for (int column = 0; column < 3; ++column) {
+                gameTiles[row][column].setCurrentValue(' ');
+            }
         }
-        return returnValue;
     }
-
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -65,10 +45,9 @@ public class GameBoardPanel extends JPanel implements MouseListener {
         g.fillRect(0 + 20, (getHeight()) / 3 * 2 - 10, getWidth() - 40, 20);
     }
 
-    void initGUI() {
-        GridBagLayout gbl = new GridBagLayout();
+    private void initGUI() {
         setBackground(Color.BLACK);
-        setLayout(gbl);
+        setLayout(new GridBagLayout());
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
 
         gridBagConstraints.fill = GridBagConstraints.BOTH;
@@ -86,23 +65,37 @@ public class GameBoardPanel extends JPanel implements MouseListener {
                 gameTiles[row][column] = new GameTile();
                 gameTiles[row][column].addMouseListener(this);
                 add(gameTiles[row][column], gridBagConstraints);
-
             }
+        }
+    }
+
+    private void playSquare(int row, int column) {
+        Character xOrO = player.playSquare(row, column);
+        if (xOrO == null) {
+            return;
+        }
+        if (xOrO == 'x' || xOrO == 'o' || xOrO == ' ') {
+            gameTiles[row][column].setCurrentValue(xOrO);
+            repaint();
+
+            App app = (App)getRootPane().getParent();
+
+            app.getScore();
         }
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        GameTile tile = (GameTile) e.getSource();
-
         if (e.getButton() == 1) {
-            if (tile.getCurrentValue() == ' ') {
-                tile.setCurrentValue(getNextPiece());
+            GameTile tile = (GameTile) e.getSource();
+            for (int row = 0; row < 3; ++row) {
+                for (int column = 0; column < 3; ++column) {
+                    if (gameTiles[row][column] == tile) {
+                        playSquare(row, column);
+                    }
+                }
             }
-        } else {
-            tile.setCurrentValue(' ');
         }
-        repaint();
     }
 
     @Override

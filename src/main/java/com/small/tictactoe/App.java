@@ -1,43 +1,51 @@
 package com.small.tictactoe;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class App extends JFrame {
-    private final GameBoardPanel gameBoardPanel = new GameBoardPanel();
+    private transient TicTacToeGamePlayer player = new TicTacToeGame();
+    private final GameBoardPanel gameBoardPanel = new GameBoardPanel(player);
+    private final JTextArea textScore = new JTextArea();
+
     App() {
         initGUI();
+    }
+
+    public static void main(String[] args) {
+        new App();
     }
 
     private void initGUI() {
         setTitle("Tic-Tac-Toe");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
 
         add(gameBoardPanel);
         JPanel buttonPanel = new JPanel();
         JButton buttonNewGame = new JButton("New Game");
         buttonNewGame.addActionListener(e -> newGame());
-        JButton buttonGetScore = new JButton ("Get Score");
-        buttonGetScore.addActionListener(e -> getScore());
         buttonPanel.add(buttonNewGame);
-        buttonPanel.add(buttonGetScore);
+
         add(buttonPanel);
+        Dimension d = new Dimension(600, 100);
+        textScore.setSize(d);
+        textScore.setMaximumSize(d);
+        textScore.setMinimumSize(d);
+        add(textScore);
         pack();
-        setSize(600, 600);
+        setSize(600, 700);
         setLocationRelativeTo(null);
         setVisible(true);
     }
+
     private void newGame() {
         gameBoardPanel.newGame();
-    }
-    private void getScore() {
-        TicTacToeGame game = new TicTacToeGame();
-        game.setBoard(gameBoardPanel.getBoard());
-        System.out.println(game.getScore());
-
-    }
-    public static void main(String[] args) {
-        new App();
+        textScore.setText("");
     }
 
+    public void getScore() {
+        TicTacToeGame game = (TicTacToeGame) player;
+        textScore.setText(game.getScore());
+    }
 }
