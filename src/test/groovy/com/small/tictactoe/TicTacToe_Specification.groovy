@@ -3,72 +3,54 @@ package com.small.tictactoe
 import spock.lang.Specification
 
 class TicTacToe_Specification extends Specification {
-    def "should show empty "() {
-        expect:
-        "Tie Game" == new TicTacToe().getScore()
+    def game = new TicTacToe()
+    void setup() {
+        game = new TicTacToe()
     }
 
     def "should show tie "() {
-        TicTacToe game = new TicTacToe();
-        int[][] plays = [[0, 1, 0],
-                         [1, 0, 1],
-                         [1, 0, 1]];
-        game.play(plays);
         expect:
         "Tie Game" == game.getScore()
     }
-    def "should show player O win "() {
-        TicTacToe game = new TicTacToe();
-        int[][] plays = [[0, 0, 0],
-                         [1, 1, 0],
-                         [1, 0, 1]];
-        game.play(plays);
+
+    def "should show player O win horizontally"() {
+        game.placePiece('O' as char, 0, 0)
+        game.placePiece('O' as char, 0, 1)
+        game.placePiece('O' as char, 0, 2)
         expect:
         "Player O wins." == game.getScore()
     }
-    def "should show player X win "() {
-        TicTacToe game = new TicTacToe();
-        int[][] plays = [[0, 1, 0],
-                         [1, 1, 1],
-                         [0, 0, 1]];
-        game.play(plays);
-        expect:
-        "Player X wins." == game.getScore()
-    }
+
     def "should show player X win vertically"() {
-        TicTacToe game = new TicTacToe();
-        int[][] plays = [[1, 1, 0],
-                         [1, 0, 1],
-                         [1, 0, 0]];
-        game.play(plays);
+        game.placePiece('X' as char, 0, 0)
+        game.placePiece('X' as char, 1, 0)
+        game.placePiece('X' as char, 2, 0)
         expect:
         "Player X wins." == game.getScore()
     }
-    def "should show player O  win vertically"() {
-        TicTacToe game = new TicTacToe();
-        int[][] plays = [[1, 0, 0],
-                         [0, 0, 1],
-                         [1, 0, 1]];
-        game.play(plays);
-        expect:
-        "Player O wins." == game.getScore()
-    }
+
     def "should show player O win criss-cross"() {
-        TicTacToe game = new TicTacToe();
-        int[][] plays = [[0, 0, 1],
-                         [1, 0, 1],
-                         [1, 0, 0]];
-        game.play(plays);
+        game.placePiece('O' as char, 0, 0)
+        game.placePiece('O' as char, 1, 1)
+        game.placePiece('O' as char, 2, 2)
         expect:
         "Player O wins." == game.getScore()
     }
-    def "should show player X win criss-cross"() {
-        TicTacToe game = new TicTacToe();
-        int[][] plays = [[0, 0, 1],
-                         [0, 1, 0],
-                         [1, 0, 1]];
-        game.play(plays);
+
+    def "should play the game"() {
+        game.newGame()
+        game.showBoard()
+        game.placePiece('X' as char, 0,0)
+        game.showBoard()
+        game.placePiece('O' as char, 1,1)
+        game.showBoard()
+        game.placePiece('X' as char, 0,2)
+        game.placePiece('O' as char, 0,1)
+        game.placePiece('X' as char, 2,1)
+        game.placePiece('O' as char, 2,2)
+        game.showBoard()
+        println(game.getScore())
         expect:
-        "Player X wins." == game.getScore()
+        true
     }
 }

@@ -2,28 +2,11 @@ package com.small.tictactoe;
 
 import java.util.Arrays;
 
-public class TicTacToe {
+public class TicTacToeGame {
     public static final String PLAYER_S_WINS = "Player %s wins.";
-    private final Character [][] board = {{' ',' ',' '},{' ',' ',' '},{' ',' ',' '}};
-    private String score = "";
+    private Character [][] board;
+    private String score;
 
-    public void newGame() {
-        for (int row = 0; row < 3; ++row) {
-            for (int column=0; column < 3 ; ++column){
-                board[row][column] = ' ';
-            }
-        }
-
-        score = "";
-    }
-    public void placePiece(char xOrO, int row, int column) {
-        board[row][column] = xOrO;
-    }
-    void showBoard() {
-        System.out.println(Arrays.deepToString(board[0]));
-        System.out.println(Arrays.deepToString(board[1]));
-        System.out.println(Arrays.deepToString(board[2]));
-    }
     public String getScore() {
         for (int i = 0; i < 3; ++i) {
             if (winByRow(i)) return score;
@@ -40,12 +23,12 @@ public class TicTacToe {
     }
 
     private boolean allSame(Character... row) {
-        return Arrays.stream(row).allMatch(e->e=='O') || Arrays.stream(row).allMatch(e->e=='X');
+        return Arrays.stream(row).allMatch(e->e=='o') || Arrays.stream(row).allMatch(e->e=='x');
     }
 
     private boolean winByCrisCross() {
         if (allSame(board[0][0], board[1][1], board[2][2]) ||
-            allSame(board[0][2], board[1][1], board[2][0])) {
+                allSame(board[0][2], board[1][1], board[2][0])) {
             score = String.format(PLAYER_S_WINS, board[1][1]);
             return true;
         }
@@ -66,5 +49,9 @@ public class TicTacToe {
             return true;
         }
         return false;
+    }
+
+    public void setBoard(Character[][] board) {
+        this.board = board;
     }
 }
