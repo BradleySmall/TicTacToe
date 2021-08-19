@@ -8,19 +8,28 @@ package com.small.tictactoe;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
-public class GameBoardPanel extends JPanel implements MouseListener {
+/**
+ *
+ */
+public class GameBoardPanel extends JPanel {
     private final GameTile[][] gameTiles = new GameTile[3][3];
     private final transient TicTacToeGamePlayer player;
 
+    /**
+     * @param player interface for handling game logic
+     */
     GameBoardPanel(TicTacToeGamePlayer player) {
         this.player = player;
         initGUI();
         newGame();
     }
 
+    /**
+     *
+     */
     public void newGame() {
         player.newGame();
         clearTable();
@@ -54,7 +63,7 @@ public class GameBoardPanel extends JPanel implements MouseListener {
                 case 0 -> g.fillRect(20, getHeight() / 6 - 10, getWidth() - 40, 20);
                 case 1 -> g.fillRect(20, (getHeight() / 6) * 3 - 10, getWidth() - 40, 20);
                 case 2 -> g.fillRect(20, getHeight() / 6 * 5 - 10, getWidth() - 40, 20);
-                default -> throw new IllegalStateException("Unexpected value: " + winRow);
+                default -> throw new IllegalStateException("Unexpected row value: " + winRow);
             }
         }
         if (winDirection == 'c') {
@@ -62,7 +71,7 @@ public class GameBoardPanel extends JPanel implements MouseListener {
                 case 0 -> g.fillRect(getWidth() / 6 - 10, 20, 20, getHeight() - 40);
                 case 1 -> g.fillRect(getWidth() / 6 * 3 - 10, 20, 20, getHeight() - 40);
                 case 2 -> g.fillRect(getWidth() / 6 * 5 - 10, 20, 20, getHeight() - 40);
-                default -> throw new IllegalStateException("Unexpected value: " + winColumn);
+                default -> throw new IllegalStateException("Unexpected column value: " + winColumn);
             }
         }
         if (winDirection == 'd') {
@@ -95,19 +104,39 @@ public class GameBoardPanel extends JPanel implements MouseListener {
 
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.insets = new Insets(30, 30, 30, 30);
-
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 1;
         gridBagConstraints.gridheight = 1;
         gridBagConstraints.weightx = gridBagConstraints.weighty = 1.0;
+
+        initializeTiles(gridBagConstraints);
+    }
+
+    private void initializeTiles(GridBagConstraints gridBagConstraints) {
         for (int column = 0; column < 3; ++column) {
             for (int row = 0; row < 3; ++row) {
                 gridBagConstraints.gridx = column;
                 gridBagConstraints.gridy = row;
                 gameTiles[row][column] = new GameTile();
-                gameTiles[row][column].addMouseListener(this);
+                gameTiles[row][column].addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        if (e.getButton() == 1) {
+                            GameTile tile = (GameTile) e.getSource();
+                            playTilesSquare(tile);
+                        }
+                    }
+                });
                 add(gameTiles[row][column], gridBagConstraints);
+            }
+        }
+    }
+
+    private void playTilesSquare(GameTile tile) {
+        for (int row = 0; row < 3; ++row) {
+            for (int column = 0; column < 3; ++column) {
+                if (gameTiles[row][column] == tile) {
+                    playSquare(row, column);
+                }
             }
         }
     }
@@ -135,39 +164,5 @@ public class GameBoardPanel extends JPanel implements MouseListener {
                 }
             }
         }
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        if (e.getButton() == 1) {
-            GameTile tile = (GameTile) e.getSource();
-            for (int row = 0; row < 3; ++row) {
-                for (int column = 0; column < 3; ++column) {
-                    if (gameTiles[row][column] == tile) {
-                        playSquare(row, column);
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        // ignoring this action
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        // ignoring this action
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        // ignoring this action
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-        // ignoring this action
     }
 }
