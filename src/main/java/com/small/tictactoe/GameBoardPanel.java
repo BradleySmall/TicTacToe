@@ -40,26 +40,44 @@ public class GameBoardPanel extends JPanel implements MouseListener {
         super.paintComponent(g);
 
         drawCrossHatch(g);
+        drawWinLine(g);
     }
 
-//    private void drawWinLine(Graphics g) {
-//        g.setColor(Color.CYAN);
-//        g.fillRect(20, getHeight() / 6 - 10, getWidth() - 40, 20);
-//        g.fillRect(20, (getHeight() / 6) * 3 - 10, getWidth() - 40, 20);
-//        g.fillRect(20, getHeight() / 6 * 5 - 10, getWidth() - 40, 20);
-//
-//        g.fillRect(getWidth() / 6 - 10, 20, 20, getHeight() - 40);
-//        g.fillRect(getWidth() / 6 * 3 - 10, 20, 20, getHeight() - 40);
-//        g.fillRect(getWidth() / 6 * 5 - 10, 20, 20, getHeight() - 40);
-//
-//        int[] x = {10, 30, getWidth() - 10, getWidth() - 30};
-//        int[] y = {30, 10, getHeight() - 30, getHeight() - 10};
-//        g.fillPolygon(new Polygon(x, y, 4));
-//        int[] x1 = {10, 30, getWidth() - 10, getWidth() - 30};
-//        int[] y1 = {getHeight() - 30, getHeight() - 10, 30, 10};
-//        g.fillPolygon(new Polygon(x1, y1, 4));
-//
-//    }
+    private void drawWinLine(Graphics g) {
+        Character winDirection = player.getWinDirection();
+        int winRow = player.getWinRow();
+        int winColumn = player.getWinColumn();
+
+        g.setColor(Color.CYAN);
+        if (winDirection == 'r') {
+            switch (winRow) {
+                case 0 -> g.fillRect(20, getHeight() / 6 - 10, getWidth() - 40, 20);
+                case 1 -> g.fillRect(20, (getHeight() / 6) * 3 - 10, getWidth() - 40, 20);
+                case 2 -> g.fillRect(20, getHeight() / 6 * 5 - 10, getWidth() - 40, 20);
+                default -> throw new IllegalStateException("Unexpected value: " + winRow);
+            }
+        }
+        if (winDirection == 'c') {
+            switch (winColumn) {
+                case 0 -> g.fillRect(getWidth() / 6 - 10, 20, 20, getHeight() - 40);
+                case 1 -> g.fillRect(getWidth() / 6 * 3 - 10, 20, 20, getHeight() - 40);
+                case 2 -> g.fillRect(getWidth() / 6 * 5 - 10, 20, 20, getHeight() - 40);
+                default -> throw new IllegalStateException("Unexpected value: " + winColumn);
+            }
+        }
+        if (winDirection == 'd') {
+            if (winColumn == 0) {
+                int[] x = {10, 30, getWidth() - 10, getWidth() - 30};
+                int[] y = {30, 10, getHeight() - 30, getHeight() - 10};
+                g.fillPolygon(new Polygon(x, y, 4));
+            }
+            if (winColumn == 2) {
+                int[] x1 = {10, 30, getWidth() - 10, getWidth() - 30};
+                int[] y1 = {getHeight() - 30, getHeight() - 10, 30, 10};
+                g.fillPolygon(new Polygon(x1, y1, 4));
+            }
+        }
+    }
 
     private void drawCrossHatch(Graphics g) {
         g.setColor(Color.BLUE);

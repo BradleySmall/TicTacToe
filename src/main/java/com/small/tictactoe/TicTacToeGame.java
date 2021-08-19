@@ -52,6 +52,21 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
         return "";
     }
 
+    @Override
+    public Character getWinDirection() {
+        return winDirection;
+    }
+
+    @Override
+    public int getWinRow() {
+        return winRow;
+    }
+
+    @Override
+    public int getWinColumn() {
+        return winColumn;
+    }
+
     private void updateGameState() {
         for (int i = 0; i < 3; ++i) {
             if (winByRow(i)) {
