@@ -6,9 +6,10 @@
 
 package com.small.tictactoe;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class TicTacToeGame implements TicTacToeGamePlayer {
+public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
     public static final String PLAYER_S_WINS = "Player %s wins.";
     private Character[][] board;
     private Character nextCharacter = 'x';

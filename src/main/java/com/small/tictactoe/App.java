@@ -9,7 +9,7 @@ package com.small.tictactoe;
 import javax.swing.*;
 
 public class App extends JFrame {
-    private transient TicTacToeGamePlayer player = new TicTacToeGame();
+    private final TicTacToeGamePlayer player = new TicTacToeGame();
     private final GameBoardPanel gameBoardPanel = new GameBoardPanel(player);
     private final JTextArea textScore = new JTextArea();
 
