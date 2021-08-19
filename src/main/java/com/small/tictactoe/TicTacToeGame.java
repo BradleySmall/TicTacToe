@@ -15,6 +15,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
     private Character nextCharacter = 'x';
     private Character winPiece = ' ';
     private Character winDirection = ' ';
+    private boolean isTied = false;
     private int winRow = -1;
     private int winColumn = -1;
 
@@ -37,6 +38,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
         winDirection = ' ';
         winRow = -1;
         winColumn = -1;
+        isTied = false;
     }
 
     @Override
@@ -44,7 +46,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
         if (winPiece != ' ') {
             return String.format(PLAYER_S_WINS, winPiece);
         }
-        if (noneLeft()) {
+        if (isTied) {
             return "Tie Game";
         }
         return "";
@@ -61,7 +63,10 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
                 return;
             }
         }
-        winByCrisCross();
+        if (winByCrisCross()) {
+            return;
+        }
+        isTied = noneLeft();
     }
 
     @Override

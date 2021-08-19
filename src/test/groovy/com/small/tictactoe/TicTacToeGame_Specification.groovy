@@ -15,19 +15,18 @@ class TicTacToeGame_Specification extends Specification {
     void setup() {
         game = new TicTacToeGame()
     }
-    def "should show tie game when no play has happened"() {
+    def "should show blank string game when no play has happened"() {
         expect:
-        "Tie Game" == game.getScore()
-
+        "" == game.getScore()
     }
 
-    def "should show tie game when new game"() {
+    def "should show blank string when new game"() {
         game.playSquare(0, 0)
         game.playSquare(0, 1)
         game.playSquare(0, 2)
         game.newGame()
         expect:
-        game.getScore() == "Tie Game"
+        game.getScore() == ""
     }
 
     def "should show player x wins "() {
@@ -51,12 +50,22 @@ class TicTacToeGame_Specification extends Specification {
     }
 
     def "should show player x wins when importing a winning board"() {
-        Character [][] board = new Character[3][3]
+        Character [][] board
         board =[['x' as char,'x' as char, 'x' as char],
                 [' ' as char,' ' as char, ' ' as char],
                 [' ' as char,' ' as char, ' ' as char]]
         game.setBoard(board)
         expect:
         "Player x wins." == game.getScore()
+    }
+
+    def "should show tie game when no squares available and no winner"() {
+        Character [][] board
+        board =[['x' as char,'o' as char, 'x' as char],
+                ['o' as char,'x' as char, 'o' as char],
+                ['o' as char,'x' as char, 'o' as char]]
+        game.setBoard(board)
+        expect:
+        "Tie Game" == game.getScore()
     }
 }

@@ -2,7 +2,7 @@
 **Copyright © 2021 Bradley M. Small**
 
 ## **Description**
-Pretty straight forward version. It is a two player game, each takes turns trying to place an X or O such that they can get 3 in a row, colum, or across the diagonals. 
+Pretty straight forward version. It is a two player game, each takes turns trying to place an X or O such that they can get 3 in a row, column, or across the diagonals. 
 
 ## **Goal**
 The goal here was to achieve separation between the UI and the game logic. The UI handles this by using a "player" with an interface. The game logic works by implementing such an interface. 
