@@ -10,7 +10,7 @@ import spock.lang.Specification
 
 class TicTacToeGame_Specification extends Specification {
 
-    def game = new TicTacToeGame()
+    TicTacToeGame game = new TicTacToeGame()
 
     void setup() {
         game = new TicTacToeGame()
