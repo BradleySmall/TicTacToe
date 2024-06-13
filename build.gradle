@@ -8,7 +8,6 @@ plugins {
     id 'groovy'
     id 'java'
 }
-
 group 'com.small'
 version '1.0-SNAPSHOT'
 
@@ -17,8 +16,9 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.codehaus.groovy:groovy-all:3.0.8'
-    implementation 'org.spockframework:spock-core:2.0-groovy-3.0'
+     testImplementation("org.spockframework:spock-core:$spockCoreVersion") {
+         exclude group: "org.codehaus.groovy", module: "groovy-all"
+     }
 }
 
 test {

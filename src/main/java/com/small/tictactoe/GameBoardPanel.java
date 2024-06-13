@@ -151,7 +151,7 @@ public class GameBoardPanel extends JPanel {
             repaint();
 
             String score = player.getScore();
-            if (!score.equals("")) {
+            if (!score.isEmpty()) {
                 int n = JOptionPane.showConfirmDialog(this,
                         "Care to try again?",
                         score,
