@@ -9,33 +9,35 @@ package com.small.tictactoe;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import static com.small.tictactoe.TileValue.*;
+
 public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
     public static final String PLAYER_S_WINS = "Player %s wins.";
-    private Character[][] board;
-    private Character nextCharacter = 'x';
-    private Character winPiece = ' ';
-    private Character winDirection = ' ';
+    private TileValue[][] board;
+    private TileValue nextCharacter = CROSS;
+    private TileValue winPiece = BLANK;
+    private WinDirection winDirection = WinDirection.NONE;
     private boolean isTied = false;
     private int winRow = -1;
     private int winColumn = -1;
 
     public TicTacToeGame() {
-        board = new Character[3][3];
+        board = new TileValue[3][3];
         newGame();
     }
 
     private void resetBoardValues() {
         for (int row = 0; row < 3; ++row) {
             for (int column = 0; column < 3; ++column) {
-                board[row][column] = ' ';
+                board[row][column] = BLANK;
             }
         }
     }
 
     private void resetGameState() {
-        nextCharacter = 'x';
-        winPiece = ' ';
-        winDirection = ' ';
+        nextCharacter = CROSS;
+        winPiece = BLANK;
+        winDirection = WinDirection.NONE;
         winRow = -1;
         winColumn = -1;
         isTied = false;
@@ -43,7 +45,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
 
     @Override
     public String getScore() {
-        if (winPiece != ' ') {
+        if (winPiece != BLANK) {
             return String.format(PLAYER_S_WINS, winPiece);
         }
         if (isTied) {
@@ -53,7 +55,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
     }
 
     @Override
-    public Character getWinDirection() {
+    public WinDirection getWinDirection() {
         return winDirection;
     }
 
@@ -72,8 +74,6 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
             if (winByRow(i)) {
                 return;
             }
-        }
-        for (int i = 0; i < 3; ++i) {
             if (winByColumn(i)) {
                 return;
             }
@@ -91,41 +91,45 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
     }
 
     @Override
-    public Character playSquare(int row, int column) {
-        if (winPiece == ' '  && board[row][column] == ' ') {
+    public TileValue playSquare(int row, int column) {
+        if (winPiece == BLANK && board[row][column] == BLANK) {
             board[row][column] = getNextPiece();
             updateGameState();
             return board[row][column];
         }
-        return null;
+        return UNKNOWN;
     }
 
-    public Character getNextPiece() {
-        Character currentCharacter = nextCharacter;
-        nextCharacter = nextCharacter == 'x' ? 'o' : 'x';
+    public TileValue getNextPiece() {
+        TileValue currentCharacter = nextCharacter;
+        nextCharacter = nextCharacter == CROSS ? NAUGHT : CROSS;
         return currentCharacter;
     }
 
-    private boolean allSame(Character... row) {
-        return Arrays.stream(row).allMatch(e -> e == 'o') || Arrays.stream(row).allMatch(e -> e == 'x');
+    private boolean allSame(TileValue... row) {
+        return Arrays.stream(row).allMatch(e -> e == NAUGHT) || Arrays.stream(row).allMatch(e -> e == CROSS);
     }
+
     private boolean noneLeft() {
-        return Arrays.stream(board[0]).noneMatch(e -> e == ' ') &&
-                Arrays.stream(board[1]).noneMatch(e -> e == ' ') &&
-                Arrays.stream(board[2]).noneMatch(e -> e == ' ');
+        return Arrays.stream(board[0]).noneMatch(e -> e == BLANK) &&
+                Arrays.stream(board[1]).noneMatch(e -> e == BLANK) &&
+                Arrays.stream(board[2]).noneMatch(e -> e == BLANK);
 
     }
+
     private boolean winByCrisCross() {
-        boolean returnValue = false;
+        boolean returnValue;
         if (allSame(board[0][0], board[1][1], board[2][2])) {
             winColumn = 0;
             returnValue = true;
         } else if (allSame(board[0][2], board[1][1], board[2][0])) {
             winColumn = 2;
             returnValue = true;
+        } else {
+            returnValue = false;
         }
         if (returnValue) {
-            winDirection = 'd';
+            winDirection = WinDirection.DIAGONAL;
             winRow = 0;
             winPiece = board[winRow][winColumn];
         }
@@ -134,7 +138,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
 
     private boolean winByColumn(int column) {
         if (allSame(board[0][column], board[1][column], board[2][column])) {
-            winDirection = 'c';
+            winDirection = WinDirection.COLUMN;
             winRow = 0;
             winColumn = column;
             winPiece = board[winRow][winColumn];
@@ -145,7 +149,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
 
     private boolean winByRow(int row) {
         if (allSame(board[row])) {
-            winDirection = 'r';
+            winDirection = WinDirection.ROW;
             winRow = row;
             winColumn = 0;
             winPiece = board[winRow][winColumn];
@@ -154,7 +158,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
         return false;
     }
 
-    public void setBoard(Character[][] board) {
+    public void setBoard(TileValue[][] board) {
         this.board = board;
         updateGameState();
     }

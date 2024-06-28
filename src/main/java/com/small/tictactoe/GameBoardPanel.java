@@ -11,22 +11,81 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import static com.small.tictactoe.TileValue.*;
+
 /**
  *
  */
 public class GameBoardPanel extends JPanel {
+    private static final int HALF_LINE_THICKNESS = 10;
+    private static final int VERTICAL_OFFSET = 20;
+    private static final int LINE_THICKNESS = 20;
+    private static final int VERTICAL_OFFSET_DOUBLED = 40;
+    private static final int HORIZONTAL_OFFSET_DOUBLED = 40;
+    private static final int THIRD_FACTOR = 3;
+    public static final int CONFIRMATION_POSITIVE = 0;
+    public static final int EXIT_STATUS = 0;
+    private static final int HORIZONTAL_OFFSET = 20;
+    public static final int SIXTH_FACTOR = 6;
+    private static final int CROSS_LATERAL_OFFSET = 10;
+    private static final int CROSS_BAR_WIDTH = 30;
+    private static final int CROSS_VERTICAL_OFFSET = 10;
+    public static final int NUMBER_CROSS_BAR_POINTS = 4;
+
     private final GameTile[][] gameTiles = new GameTile[3][3];
     private final transient TicTacToeGamePlayer player;
     private final JFrame jframe;
 
-    private final JPanel glassPanel = new JPanel(){
+    private final JPanel glassPanel = new JPanel() {
+        @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             drawWinLine(g);
         }
+
+        private void drawWinLine(Graphics g) {
+            WinDirection winDirection = player.getWinDirection();
+            int winRow = player.getWinRow();
+            int winColumn = player.getWinColumn();
+            if (winDirection == WinDirection.NONE)
+                return;
+
+            g.setColor(Color.CYAN);
+            if (winDirection == WinDirection.ROW) {
+                switch (winRow) {
+                    case 0 -> g.fillRect(HORIZONTAL_OFFSET, getHeight() / SIXTH_FACTOR - HALF_LINE_THICKNESS, getWidth() - HORIZONTAL_OFFSET_DOUBLED, LINE_THICKNESS);
+                    case 1 -> g.fillRect(HORIZONTAL_OFFSET, getHeight() / SIXTH_FACTOR * 3 - HALF_LINE_THICKNESS, getWidth() - HORIZONTAL_OFFSET_DOUBLED, LINE_THICKNESS);
+                    case 2 -> g.fillRect(HORIZONTAL_OFFSET, getHeight() / SIXTH_FACTOR * 5 - HALF_LINE_THICKNESS, getWidth() - HORIZONTAL_OFFSET_DOUBLED, LINE_THICKNESS);
+                    default -> throw new IllegalStateException("Unexpected row value: " + winRow);
+                }
+            }
+            if (winDirection == WinDirection.COLUMN) {
+                switch (winColumn) {
+                    case 0 -> g.fillRect(getWidth() / SIXTH_FACTOR - HALF_LINE_THICKNESS, VERTICAL_OFFSET, LINE_THICKNESS, getHeight() - VERTICAL_OFFSET_DOUBLED);
+                    case 1 -> g.fillRect(getWidth() / SIXTH_FACTOR * 3 - HALF_LINE_THICKNESS, VERTICAL_OFFSET, LINE_THICKNESS, getHeight() - VERTICAL_OFFSET_DOUBLED);
+                    case 2 -> g.fillRect(getWidth() / SIXTH_FACTOR * 5 - HALF_LINE_THICKNESS, VERTICAL_OFFSET, LINE_THICKNESS, getHeight() - VERTICAL_OFFSET_DOUBLED);
+                    default -> throw new IllegalStateException("Unexpected column value: " + winColumn);
+                }
+            }
+            if (winDirection == WinDirection.DIAGONAL) {
+                if (winColumn == 0) {
+                    int[] x = {CROSS_LATERAL_OFFSET, CROSS_BAR_WIDTH, getWidth() - CROSS_LATERAL_OFFSET, getWidth() - CROSS_BAR_WIDTH};
+                    int[] y = {CROSS_BAR_WIDTH, CROSS_VERTICAL_OFFSET, getHeight() - CROSS_BAR_WIDTH, getHeight() - CROSS_VERTICAL_OFFSET};
+                    g.fillPolygon(new Polygon(x, y, NUMBER_CROSS_BAR_POINTS));
+                }
+                if (winColumn == 2) {
+                    int[] x1 = {CROSS_LATERAL_OFFSET, CROSS_BAR_WIDTH, getWidth() - CROSS_LATERAL_OFFSET, getWidth() - CROSS_BAR_WIDTH};
+                    int[] y1 = {getHeight() - CROSS_BAR_WIDTH, getHeight() - CROSS_VERTICAL_OFFSET, CROSS_BAR_WIDTH, CROSS_VERTICAL_OFFSET};
+                    g.fillPolygon(new Polygon(x1, y1, NUMBER_CROSS_BAR_POINTS));
+                }
+            }
+        }
+
     };
+
     /**
      * @param player interface for handling game logic
+     * @param jframe parent frame to hold glassPane for win-lines
      */
     GameBoardPanel(TicTacToeGamePlayer player, JFrame jframe) {
         this.jframe = jframe;
@@ -48,7 +107,7 @@ public class GameBoardPanel extends JPanel {
     private void clearTable() {
         for (int row = 0; row < 3; ++row) {
             for (int column = 0; column < 3; ++column) {
-                gameTiles[row][column].setCurrentValue(' ');
+                gameTiles[row][column].setCurrentValue(BLANK);
             }
         }
     }
@@ -60,51 +119,13 @@ public class GameBoardPanel extends JPanel {
         drawCrossHatch(g);
     }
 
-    private void drawWinLine(Graphics g) {
-        Character winDirection = player.getWinDirection();
-        int winRow = player.getWinRow();
-        int winColumn = player.getWinColumn();
-        if (winDirection == ' ')
-            return;
-
-        g.setColor(Color.CYAN);
-        if (winDirection == 'r') {
-            switch (winRow) {
-                case 0 -> g.fillRect(20, getHeight() / 6 - 10, getWidth() - 40, 20);
-                case 1 -> g.fillRect(20, (getHeight() / 6) * 3 - 10, getWidth() - 40, 20);
-                case 2 -> g.fillRect(20, getHeight() / 6 * 5 - 10, getWidth() - 40, 20);
-                default -> throw new IllegalStateException("Unexpected row value: " + winRow);
-            }
-        }
-        if (winDirection == 'c') {
-            switch (winColumn) {
-                case 0 -> g.fillRect(getWidth() / 6 - 10, 20, 20, getHeight() - 40);
-                case 1 -> g.fillRect(getWidth() / 6 * 3 - 10, 20, 20, getHeight() - 40);
-                case 2 -> g.fillRect(getWidth() / 6 * 5 - 10, 20, 20, getHeight() - 40);
-                default -> throw new IllegalStateException("Unexpected column value: " + winColumn);
-            }
-        }
-        if (winDirection == 'd') {
-            if (winColumn == 0) {
-                int[] x = {10, 30, getWidth() - 10, getWidth() - 30};
-                int[] y = {30, 10, getHeight() - 30, getHeight() - 10};
-                g.fillPolygon(new Polygon(x, y, 4));
-            }
-            if (winColumn == 2) {
-                int[] x1 = {10, 30, getWidth() - 10, getWidth() - 30};
-                int[] y1 = {getHeight() - 30, getHeight() - 10, 30, 10};
-                g.fillPolygon(new Polygon(x1, y1, 4));
-            }
-        }
-    }
-
     private void drawCrossHatch(Graphics g) {
         g.setColor(Color.BLUE);
-        g.fillRect((getWidth()) / 3 - 10, 20, 20, getHeight() - 40);
-        g.fillRect((getWidth()) / 3 * 2 - 10, 20, 20, getHeight() - 40);
+        g.fillRect(getWidth() / THIRD_FACTOR - HALF_LINE_THICKNESS, VERTICAL_OFFSET, LINE_THICKNESS, getHeight() - VERTICAL_OFFSET_DOUBLED);
+        g.fillRect(getWidth() / THIRD_FACTOR * 2 - HALF_LINE_THICKNESS, VERTICAL_OFFSET, LINE_THICKNESS, getHeight() - VERTICAL_OFFSET_DOUBLED);
 
-        g.fillRect(20, (getHeight()) / 3 - 10, getWidth() - 40, 20);
-        g.fillRect(20, (getHeight()) / 3 * 2 - 10, getWidth() - 40, 20);
+        g.fillRect(HORIZONTAL_OFFSET, getHeight() / THIRD_FACTOR - HALF_LINE_THICKNESS, getWidth() - HORIZONTAL_OFFSET_DOUBLED, LINE_THICKNESS);
+        g.fillRect(HORIZONTAL_OFFSET, getHeight() / THIRD_FACTOR * 2 - HALF_LINE_THICKNESS, getWidth() - HORIZONTAL_OFFSET_DOUBLED, LINE_THICKNESS);
     }
 
     private void initGUI() {
@@ -156,33 +177,31 @@ public class GameBoardPanel extends JPanel {
     }
 
     private void playSquare(int row, int column) {
-        Character xOrO = player.playSquare(row, column);
-        if (xOrO == null) {
+        TileValue xOrO = player.playSquare(row, column);
+        if (xOrO == UNKNOWN) {
             return;
         }
-        if (xOrO == 'x' || xOrO == 'o' || xOrO == ' ') {
-            gameTiles[row][column].setCurrentValue(xOrO);
-            repaint();
+        gameTiles[row][column].setCurrentValue(xOrO);
+        repaint();
 
-            String score = player.getScore();
-            if (!score.isEmpty()) {
-                displayWin(score);
-            }
+        String score = player.getScore();
+        if (!score.isEmpty()) {
+            displayWin(score);
         }
     }
 
     private void displayWin(String score) {
         glassPanel.setVisible(true);
-        int n = JOptionPane.showConfirmDialog(this,
+        int confirmation = JOptionPane.showConfirmDialog(this,
                 "Care to try again?",
                 score,
                 JOptionPane.YES_NO_OPTION);
 
         glassPanel.setVisible(false);
-        if (n == 0) {
+        if (confirmation == CONFIRMATION_POSITIVE) {
             newGame();
         } else {
-            System.exit(0);
+            System.exit(EXIT_STATUS);
         }
     }
 }

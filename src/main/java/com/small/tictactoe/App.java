@@ -11,8 +11,13 @@ import javax.swing.*;
 public class App extends JFrame {
     private final TicTacToeGamePlayer player = new TicTacToeGame();
     private final GameBoardPanel gameBoardPanel = new GameBoardPanel(player, this);
+
     App() {
         initGUI();
+    }
+
+    public static void main(String[] args) {
+        new App();
     }
 
     private void initGUI() {
@@ -26,9 +31,5 @@ public class App extends JFrame {
         setSize(600, 600);
         setLocationRelativeTo(null);
         setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        new App();
     }
 }

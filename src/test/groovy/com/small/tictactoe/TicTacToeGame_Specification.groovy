@@ -15,6 +15,7 @@ class TicTacToeGame_Specification extends Specification {
     void setup() {
         game = new TicTacToeGame()
     }
+
     def "should show blank string game when no play has happened"() {
         expect:
         "" == game.getScore()
@@ -36,34 +37,34 @@ class TicTacToeGame_Specification extends Specification {
         game.playSquare(2, 1)
         game.playSquare(0, 2)
         expect:
-        game.getScore() == "Player x wins."
+        game.getScore() == "Player CROSS wins."
     }
 
     def "should show that play begins with x and swaps to o each call"() {
         expect:
-        (char)'x' == game.getNextPiece()
-        (char)'o' == game.getNextPiece()
-        (char)'x' == game.getNextPiece()
-        (char)'o' == game.getNextPiece()
-        (char)'x' == game.getNextPiece()
-        (char)'o' == game.getNextPiece()
+        TileValue.CROSS == game.getNextPiece()
+        TileValue.NAUGHT == game.getNextPiece()
+        TileValue.CROSS == game.getNextPiece()
+        TileValue.NAUGHT == game.getNextPiece()
+        TileValue.CROSS == game.getNextPiece()
+        TileValue.NAUGHT == game.getNextPiece()
     }
 
     def "should show player x wins when importing a winning board"() {
-        Character [][] board
-        board =[['x' as char,'x' as char, 'x' as char],
-                [' ' as char,' ' as char, ' ' as char],
-                [' ' as char,' ' as char, ' ' as char]]
+        TileValue[][] board
+        board = [[TileValue.CROSS, TileValue.CROSS, TileValue.CROSS],
+                 [TileValue.BLANK, TileValue.BLANK, TileValue.BLANK],
+                 [TileValue.BLANK, TileValue.BLANK, TileValue.BLANK]]
         game.setBoard(board)
         expect:
-        "Player x wins." == game.getScore()
+        "Player CROSS wins." == game.getScore()
     }
 
     def "should show tie game when no squares available and no winner"() {
-        Character [][] board
-        board =[['x' as char,'o' as char, 'x' as char],
-                ['o' as char,'x' as char, 'o' as char],
-                ['o' as char,'x' as char, 'o' as char]]
+        TileValue[][] board
+        board = [[TileValue.CROSS, TileValue.NAUGHT, TileValue.CROSS],
+                 [TileValue.NAUGHT, TileValue.CROSS, TileValue.NAUGHT],
+                 [TileValue.NAUGHT, TileValue.CROSS, TileValue.NAUGHT]]
         game.setBoard(board)
         expect:
         "Tie Game" == game.getScore()
