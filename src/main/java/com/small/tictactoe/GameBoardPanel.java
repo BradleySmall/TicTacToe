@@ -17,12 +17,21 @@ import java.awt.event.MouseEvent;
 public class GameBoardPanel extends JPanel {
     private final GameTile[][] gameTiles = new GameTile[3][3];
     private final transient TicTacToeGamePlayer player;
+    private final JFrame jframe;
 
+    private final JPanel glassPanel = new JPanel(){
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            drawWinLine(g);
+        }
+    };
     /**
      * @param player interface for handling game logic
      */
-    GameBoardPanel(TicTacToeGamePlayer player) {
+    GameBoardPanel(TicTacToeGamePlayer player, JFrame jframe) {
+        this.jframe = jframe;
         this.player = player;
+
         initGUI();
         newGame();
     }
@@ -49,13 +58,14 @@ public class GameBoardPanel extends JPanel {
         super.paintComponent(g);
 
         drawCrossHatch(g);
-        drawWinLine(g);
     }
 
     private void drawWinLine(Graphics g) {
         Character winDirection = player.getWinDirection();
         int winRow = player.getWinRow();
         int winColumn = player.getWinColumn();
+        if (winDirection == ' ')
+            return;
 
         g.setColor(Color.CYAN);
         if (winDirection == 'r') {
@@ -107,8 +117,12 @@ public class GameBoardPanel extends JPanel {
         gridBagConstraints.gridwidth = 1;
         gridBagConstraints.gridheight = 1;
         gridBagConstraints.weightx = gridBagConstraints.weighty = 1.0;
-
         initializeTiles(gridBagConstraints);
+
+        glassPanel.setForeground(Color.cyan);
+        glassPanel.setOpaque(false);
+        glassPanel.setVisible(false);
+        jframe.setGlassPane(glassPanel);
     }
 
     private void initializeTiles(GridBagConstraints gridBagConstraints) {
@@ -152,17 +166,23 @@ public class GameBoardPanel extends JPanel {
 
             String score = player.getScore();
             if (!score.isEmpty()) {
-                int n = JOptionPane.showConfirmDialog(this,
-                        "Care to try again?",
-                        score,
-                        JOptionPane.YES_NO_OPTION);
-
-                if (n == 0) {
-                    newGame();
-                } else {
-                    System.exit(0);
-                }
+                displayWin(score);
             }
+        }
+    }
+
+    private void displayWin(String score) {
+        glassPanel.setVisible(true);
+        int n = JOptionPane.showConfirmDialog(this,
+                "Care to try again?",
+                score,
+                JOptionPane.YES_NO_OPTION);
+
+        glassPanel.setVisible(false);
+        if (n == 0) {
+            newGame();
+        } else {
+            System.exit(0);
         }
     }
 }

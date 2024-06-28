@@ -10,8 +10,7 @@ import javax.swing.*;
 
 public class App extends JFrame {
     private final TicTacToeGamePlayer player = new TicTacToeGame();
-    private final GameBoardPanel gameBoardPanel = new GameBoardPanel(player);
-
+    private final GameBoardPanel gameBoardPanel = new GameBoardPanel(player, this);
     App() {
         initGUI();
     }
