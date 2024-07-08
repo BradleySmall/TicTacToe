@@ -102,12 +102,12 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
 
     public TileValue getNextPiece() {
         TileValue currentCharacter = nextCharacter;
-        nextCharacter = nextCharacter == CROSS ? NAUGHT : CROSS;
+        nextCharacter = nextCharacter == CROSS ? NOUGHT : CROSS;
         return currentCharacter;
     }
 
     private boolean allSame(TileValue... row) {
-        return Arrays.stream(row).allMatch(e -> e == NAUGHT) || Arrays.stream(row).allMatch(e -> e == CROSS);
+        return Arrays.stream(row).allMatch(e -> e == NOUGHT) || Arrays.stream(row).allMatch(e -> e == CROSS);
     }
 
     private boolean noneLeft() {

@@ -7,7 +7,7 @@
 package com.small.tictactoe;
 
 public enum TileValue {
-    NAUGHT,
+    NOUGHT,
     CROSS,
     BLANK,
     UNKNOWN

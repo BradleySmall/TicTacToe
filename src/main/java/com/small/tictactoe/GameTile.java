@@ -14,8 +14,8 @@ import static com.small.tictactoe.TileValue.BLANK;
 public class GameTile extends JPanel {
     private static final int UPPER_LEFT_X = 0;
     private static final int UPPER_LEFT_Y = 0;
-    private static final int NAUGHT_INTERIOR_OFFSET_X = 20;
-    private static final int NAUGHT_INTERIOR_OFFSET_Y = 20;
+    private static final int NOUGHT_INTERIOR_OFFSET_X = 20;
+    private static final int NOUGHT_INTERIOR_OFFSET_Y = 20;
     private static final int CROSS_LATERAL_OFFSET = 10;
     private static final int CROSS_BAR_WIDTH = 30;
     private static final int CROSS_VERTICAL_OFFSET = 10;
@@ -25,7 +25,7 @@ public class GameTile extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         switch (getCurrentValue()) {
-            case NAUGHT -> drawNaught(g);
+            case NOUGHT -> drawNought(g);
             case CROSS -> drawCross(g);
             default -> clearBackground(g);
         }
@@ -67,15 +67,15 @@ public class GameTile extends JPanel {
         g.fillPolygon(new Polygon(x1, y1, NUMBER_CROSS_BAR_POINTS));
     }
 
-    private void drawNaught(Graphics g) {
+    private void drawNought(Graphics g) {
         g.setColor(Color.GREEN);
         g.fillOval(UPPER_LEFT_X, UPPER_LEFT_Y, getWidth(), getHeight());
         g.setColor(Color.BLACK);
         g.fillOval(
-                NAUGHT_INTERIOR_OFFSET_X,
-                NAUGHT_INTERIOR_OFFSET_Y,
-                getWidth() - (NAUGHT_INTERIOR_OFFSET_X * 2),
-                getHeight() -(NAUGHT_INTERIOR_OFFSET_Y * 2));
+                NOUGHT_INTERIOR_OFFSET_X,
+                NOUGHT_INTERIOR_OFFSET_Y,
+                getWidth() - (NOUGHT_INTERIOR_OFFSET_X * 2),
+                getHeight() -(NOUGHT_INTERIOR_OFFSET_Y * 2));
     }
 
     public TileValue getCurrentValue() {
