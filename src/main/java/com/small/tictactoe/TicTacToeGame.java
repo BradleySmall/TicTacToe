@@ -8,52 +8,69 @@ package com.small.tictactoe;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
-    public static final String PLAYER_S_WINS = "Player %s wins.";
-    private Character[][] board;
-    private Character nextCharacter = 'x';
-    private Character winPiece = ' ';
-    private Character winDirection = ' ';
+    private static final String PLAYER_S_WINS = "Player %s wins.";
+    private TileValue[][] board;
+    private TileValue nextCharacter = TileValue.CROSS;
+    private TileValue winPiece = TileValue.EMPTY;
+    private WinDirection winDirection = WinDirection.NONE;
     private boolean isTied = false;
     private int winRow = -1;
     private int winColumn = -1;
 
     public TicTacToeGame() {
-        board = new Character[3][3];
+        board = new TileValue[BoardConfig.BOARD_SIZE][BoardConfig.BOARD_SIZE];
         newGame();
     }
 
     private void resetBoardValues() {
-        for (int row = 0; row < 3; ++row) {
-            for (int column = 0; column < 3; ++column) {
-                board[row][column] = ' ';
+        for (int row = 0; row < BoardConfig.BOARD_SIZE; ++row) {
+            for (int column = 0; column < BoardConfig.BOARD_SIZE; ++column) {
+                board[row][column] = TileValue.EMPTY;
             }
         }
     }
 
     private void resetGameState() {
-        nextCharacter = 'x';
-        winPiece = ' ';
-        winDirection = ' ';
+        nextCharacter = TileValue.CROSS;
+        winPiece = TileValue.EMPTY;
+        winDirection = WinDirection.NONE;
         winRow = -1;
         winColumn = -1;
         isTied = false;
     }
 
+    /**
+     * @return if the game is in a state that is over like tie or win
+     */
     @Override
     public String getScore() {
-        if (winPiece != ' ') {
-            return String.format(PLAYER_S_WINS, winPiece);
+        String result;
+        if (!isGameOver()) {
+            result = "";
+        } else if (isTied) {
+            result = "Tie Game";
+        } else {
+            result = String.format(PLAYER_S_WINS, winPiece.name());
         }
-        if (isTied) {
-            return "Tie Game";
-        }
-        return "";
+        return result;
     }
 
     @Override
-    public Character getWinDirection() {
+    public TileValue getCurrentPlayer() {
+        return nextCharacter;
+    }
+
+    @Override
+    public boolean isGameOver() {
+        return winPiece != TileValue.EMPTY || isTied;
+    }
+
+    @Override
+    public WinDirection getWinDirection() {
         return winDirection;
     }
 
@@ -68,17 +85,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
     }
 
     private void updateGameState() {
-        for (int i = 0; i < 3; ++i) {
-            if (winByRow(i)) {
-                return;
-            }
-        }
-        for (int i = 0; i < 3; ++i) {
-            if (winByColumn(i)) {
-                return;
-            }
-        }
-        if (winByCrisCross()) {
+        if (checkWinConditions()) {
             return;
         }
         isTied = noneLeft();
@@ -91,71 +98,80 @@ public class TicTacToeGame implements TicTacToeGamePlayer, Serializable {
     }
 
     @Override
-    public Character playSquare(int row, int column) {
-        if (winPiece == ' '  && board[row][column] == ' ') {
+    /**
+     * places the next piece and updates the game state returning the winning piece if in a win state
+     */
+    public Optional<TileValue> makeMove(int row, int column) {
+        if ( row < 0 || row >= BoardConfig.BOARD_SIZE || column < 0 || column >= BoardConfig.BOARD_SIZE) {
+            throw new IllegalArgumentException("Row and column must be between 0 and 2");
+        }
+        if (winPiece == TileValue.EMPTY  && board[row][column] == TileValue.EMPTY) {
             board[row][column] = getNextPiece();
             updateGameState();
-            return board[row][column];
+            return Optional.of(board[row][column]);
         }
-        return null;
+        return Optional.empty();
     }
 
-    public Character getNextPiece() {
-        Character currentCharacter = nextCharacter;
-        nextCharacter = nextCharacter == 'x' ? 'o' : 'x';
+    public TileValue getNextPiece() {
+        TileValue currentCharacter = nextCharacter;
+        nextCharacter = nextCharacter == TileValue.CROSS ? TileValue.NOUGHT : TileValue.CROSS;
         return currentCharacter;
     }
 
-    private boolean allSame(Character... row) {
-        return Arrays.stream(row).allMatch(e -> e == 'o') || Arrays.stream(row).allMatch(e -> e == 'x');
+    private boolean allSame(TileValue... row) {
+        return Arrays.stream(row).collect(Collectors.toSet()).size() == 1 && row[0] != TileValue.EMPTY;
     }
+
     private boolean noneLeft() {
-        return Arrays.stream(board[0]).noneMatch(e -> e == ' ') &&
-                Arrays.stream(board[1]).noneMatch(e -> e == ' ') &&
-                Arrays.stream(board[2]).noneMatch(e -> e == ' ');
-
+        return Arrays.stream(board)
+                .flatMap(Arrays::stream)
+                .noneMatch(e -> e == TileValue.EMPTY);
     }
-    private boolean winByCrisCross() {
-        boolean returnValue = false;
+    private boolean checkWinConditions() {
+        // Check rows
+        for (int row = 0; row < BoardConfig.BOARD_SIZE; row++) {
+            if (allSame(board[row][0], board[row][1], board[row][2])) {
+                winDirection = WinDirection.ROW;
+                winRow = row;
+                winColumn = 0;
+                winPiece = board[row][0];
+                return true;
+            }
+        }
+        // Check columns
+        for (int col = 0; col < BoardConfig.BOARD_SIZE; col++) {
+            if (allSame(board[0][col], board[1][col], board[2][col])) {
+                winDirection = WinDirection.COLUMN;
+                winRow = 0;
+                winColumn = col;
+                winPiece = board[0][col];
+                return true;
+            }
+        }
+        // Check diagonals
         if (allSame(board[0][0], board[1][1], board[2][2])) {
+            winDirection = WinDirection.DIAGONAL;
+            winRow = 0;
             winColumn = 0;
-            returnValue = true;
-        } else if (allSame(board[0][2], board[1][1], board[2][0])) {
+            winPiece = board[0][0];
+            return true;
+        }
+        if (allSame(board[0][2], board[1][1], board[2][0])) {
+            winDirection = WinDirection.DIAGONAL;
+            winRow = 0;
             winColumn = 2;
-            returnValue = true;
-        }
-        if (returnValue) {
-            winDirection = 'd';
-            winRow = 0;
-            winPiece = board[winRow][winColumn];
-        }
-        return returnValue;
-    }
-
-    private boolean winByColumn(int column) {
-        if (allSame(board[0][column], board[1][column], board[2][column])) {
-            winDirection = 'c';
-            winRow = 0;
-            winColumn = column;
-            winPiece = board[winRow][winColumn];
+            winPiece = board[0][2];
             return true;
         }
         return false;
     }
 
-    private boolean winByRow(int row) {
-        if (allSame(board[row])) {
-            winDirection = 'r';
-            winRow = row;
-            winColumn = 0;
-            winPiece = board[winRow][winColumn];
-            return true;
+    public void setBoard(TileValue[][] board) {
+        if (board == null || board.length != BoardConfig.BOARD_SIZE || Arrays.stream(board).anyMatch(row -> row == null || row.length != BoardConfig.BOARD_SIZE)) {
+            throw new IllegalArgumentException("Board must be a square array of size " + BoardConfig.BOARD_SIZE);
         }
-        return false;
-    }
-
-    public void setBoard(Character[][] board) {
-        this.board = board;
+        this.board = Arrays.stream(board).map(TileValue[]::clone).toArray(TileValue[][]::new);
         updateGameState();
     }
 }

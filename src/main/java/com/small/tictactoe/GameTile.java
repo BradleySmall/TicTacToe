@@ -10,48 +10,63 @@ import javax.swing.*;
 import java.awt.*;
 
 public class GameTile extends JPanel {
-    private char currentValue = ' ';
+    private TileValue currentValue = TileValue.EMPTY;
 
     @Override
     protected void paintComponent(Graphics g) {
-        if (getCurrentValue() == 'o') {
-            drawNaught(g);
-        } else if (getCurrentValue() == 'x') {
-            drawCross(g);
-        } else {
-            clearBackground(g);
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2d.setColor(TileConfig.BACKGROUND_COLOR);
+        g2d.fillRect(0, 0, getWidth(), getHeight());
+
+        if (currentValue == TileValue.NOUGHT) {
+            drawNaught(g2d);
+        } else if (currentValue == TileValue.CROSS) {
+            drawCross(g2d);
         }
     }
 
-    private void clearBackground(Graphics g) {
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, getWidth(), getHeight());
-        repaint();
-    }
-
     private void drawCross(Graphics g) {
-        g.setColor(Color.RED);
-        int[] x = {10, 30, getWidth() - 10, getWidth() - 30};
-        int[] y = {30, 10, getHeight() - 30, getHeight() - 10};
-        g.fillPolygon(new Polygon(x, y, 4));
-        int[] x1 = {10, 30, getWidth() - 10, getWidth() - 30};
-        int[] y1 = {getHeight() - 30, getHeight() - 10, 30, 10};
-        g.fillPolygon(new Polygon(x1, y1, 4));
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setColor(TileConfig.CROSS_COLOR);
+        g2d.setStroke(new BasicStroke(TileConfig.CROSS_BAR_WIDTH / 2f));
+        g2d.drawLine(TileConfig.CROSS_LATERAL_OFFSET, TileConfig.CROSS_VERTICAL_OFFSET,
+                getWidth() - TileConfig.CROSS_LATERAL_OFFSET, getHeight() - TileConfig.CROSS_VERTICAL_OFFSET);
+        g2d.drawLine(getWidth() - TileConfig.CROSS_LATERAL_OFFSET, TileConfig.CROSS_VERTICAL_OFFSET,
+                TileConfig.CROSS_LATERAL_OFFSET, getHeight() - TileConfig.CROSS_VERTICAL_OFFSET);
     }
 
     private void drawNaught(Graphics g) {
-        g.setColor(Color.GREEN);
-        g.fillOval(0, 0, getWidth(), getHeight());
-        g.setColor(Color.BLACK);
-        g.fillOval(20, 20, getWidth() - 40, getHeight() - 40);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setColor(TileConfig.NOUGHT_COLOR);
+        g2d.fillOval(0, 0, getWidth(), getHeight());
+        g2d.setColor(TileConfig.BACKGROUND_COLOR);
+        g2d.fillOval(TileConfig.NOUGHT_INTERIOR_OFFSET_X, TileConfig.NOUGHT_INTERIOR_OFFSET_Y,
+                getWidth() - BoardConfig.HORIZONTAL_OFFSET_DOUBLED,
+                getHeight() - BoardConfig.VERTICAL_OFFSET_DOUBLED);
     }
-
-    public char getCurrentValue() {
+    /**
+     * Returns the current value of the tile.
+     * @return the tile's value (CROSS, NOUGHT, or EMPTY)
+     */
+    public TileValue getCurrentValue() {
         return currentValue;
     }
 
-    public void setCurrentValue(char currentValue) {
+    /**
+     * setter for currentValue checks the validity of the parameter
+     * @param currentValue the value to set
+     */
+    public void setCurrentValue(TileValue currentValue) {
+        if (currentValue == null) {
+            throw new IllegalArgumentException("Cannot set tile to null");
+        }
         this.currentValue = currentValue;
     }
+
 
 }

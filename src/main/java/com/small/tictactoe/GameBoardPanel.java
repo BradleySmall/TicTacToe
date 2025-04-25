@@ -8,47 +8,57 @@ package com.small.tictactoe;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Optional;
 
 /**
  *
  */
 public class GameBoardPanel extends JPanel {
-    private final GameTile[][] gameTiles = new GameTile[3][3];
+    private final GameTile[][] gameTiles = new GameTile[BoardConfig.BOARD_SIZE][BoardConfig.BOARD_SIZE];
     private final transient TicTacToeGamePlayer player;
-    private final JFrame jframe;
+    private final JLayeredPane layeredPane;
+    private final JPanel tilePanel;
+    private final JPanel winLinePanel;
+    private final GameEventListener listener;
 
-    private final JPanel glassPanel = new JPanel(){
-        public void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            drawWinLine(g);
-        }
-    };
     /**
      * @param player interface for handling game logic
      */
-    GameBoardPanel(TicTacToeGamePlayer player, JFrame jframe) {
-        this.jframe = jframe;
+    GameBoardPanel(TicTacToeGamePlayer player, GameEventListener listener) {
         this.player = player;
+        this.listener = listener;
+        this.layeredPane = new JLayeredPane();
+        this.tilePanel = new JPanel();
+        this.winLinePanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                drawWinLine(g);
+            }
+        };
 
         initGUI();
         newGame();
     }
 
     /**
-     *
+     * initializes a new game
      */
     public void newGame() {
         player.newGame();
         clearTable();
+        winLinePanel.setVisible(false);
         repaint();
     }
 
     private void clearTable() {
-        for (int row = 0; row < 3; ++row) {
-            for (int column = 0; column < 3; ++column) {
-                gameTiles[row][column].setCurrentValue(' ');
+        for (int row = 0; row < BoardConfig.BOARD_SIZE; ++row) {
+            for (int column = 0; column < BoardConfig.BOARD_SIZE; ++column) {
+                gameTiles[row][column].setCurrentValue(TileValue.EMPTY);
             }
         }
     }
@@ -56,78 +66,92 @@ public class GameBoardPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
         drawCrossHatch(g);
     }
 
     private void drawWinLine(Graphics g) {
-        Character winDirection = player.getWinDirection();
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setColor(BoardConfig.WIN_LINE_COLOR);
+        WinDirection winDirection = player.getWinDirection();
         int winRow = player.getWinRow();
         int winColumn = player.getWinColumn();
-        if (winDirection == ' ')
-            return;
+        if (winDirection == WinDirection.NONE) return;
 
-        g.setColor(Color.CYAN);
-        if (winDirection == 'r') {
-            switch (winRow) {
-                case 0 -> g.fillRect(20, getHeight() / 6 - 10, getWidth() - 40, 20);
-                case 1 -> g.fillRect(20, (getHeight() / 6) * 3 - 10, getWidth() - 40, 20);
-                case 2 -> g.fillRect(20, getHeight() / 6 * 5 - 10, getWidth() - 40, 20);
-                default -> throw new IllegalStateException("Unexpected row value: " + winRow);
-            }
-        }
-        if (winDirection == 'c') {
-            switch (winColumn) {
-                case 0 -> g.fillRect(getWidth() / 6 - 10, 20, 20, getHeight() - 40);
-                case 1 -> g.fillRect(getWidth() / 6 * 3 - 10, 20, 20, getHeight() - 40);
-                case 2 -> g.fillRect(getWidth() / 6 * 5 - 10, 20, 20, getHeight() - 40);
-                default -> throw new IllegalStateException("Unexpected column value: " + winColumn);
-            }
-        }
-        if (winDirection == 'd') {
-            if (winColumn == 0) {
-                int[] x = {10, 30, getWidth() - 10, getWidth() - 30};
-                int[] y = {30, 10, getHeight() - 30, getHeight() - 10};
-                g.fillPolygon(new Polygon(x, y, 4));
-            }
-            if (winColumn == 2) {
-                int[] x1 = {10, 30, getWidth() - 10, getWidth() - 30};
-                int[] y1 = {getHeight() - 30, getHeight() - 10, 30, 10};
-                g.fillPolygon(new Polygon(x1, y1, 4));
-            }
+        if (winDirection == WinDirection.ROW) {
+            int y = getHeight() / 6 * (2 * winRow + 1) - BoardConfig.HALF_LINE_THICKNESS;
+            g2d.fillRect(BoardConfig.HORIZONTAL_OFFSET, y,
+                    getWidth() - BoardConfig.HORIZONTAL_OFFSET_DOUBLED, BoardConfig.LINE_THICKNESS);
+        } else if (winDirection == WinDirection.COLUMN) {
+            int x = getWidth() / 6 * (2 * winColumn + 1) - BoardConfig.HALF_LINE_THICKNESS;
+            g2d.fillRect(x, BoardConfig.VERTICAL_OFFSET,
+                    BoardConfig.LINE_THICKNESS, getHeight() - BoardConfig.VERTICAL_OFFSET_DOUBLED);
+        } else if (winDirection == WinDirection.DIAGONAL) {
+            int[] x = {TileConfig.CROSS_LATERAL_OFFSET, TileConfig.CROSS_BAR_WIDTH,
+                    getWidth() - TileConfig.CROSS_LATERAL_OFFSET, getWidth() - TileConfig.CROSS_BAR_WIDTH};
+            int[] y = winColumn == 0 ?
+                    new int[]{TileConfig.CROSS_BAR_WIDTH, TileConfig.CROSS_VERTICAL_OFFSET,
+                            getHeight() - TileConfig.CROSS_BAR_WIDTH, getHeight() - TileConfig.CROSS_VERTICAL_OFFSET} :
+                    new int[]{getHeight() - TileConfig.CROSS_BAR_WIDTH, getHeight() - TileConfig.CROSS_VERTICAL_OFFSET,
+                            TileConfig.CROSS_BAR_WIDTH, TileConfig.CROSS_VERTICAL_OFFSET};
+            g2d.fillPolygon(new Polygon(x, y, TileConfig.NUMBER_CROSS_BAR_POINTS));
         }
     }
 
-    private void drawCrossHatch(Graphics g) {
-        g.setColor(Color.BLUE);
-        g.fillRect((getWidth()) / 3 - 10, 20, 20, getHeight() - 40);
-        g.fillRect((getWidth()) / 3 * 2 - 10, 20, 20, getHeight() - 40);
 
-        g.fillRect(20, (getHeight()) / 3 - 10, getWidth() - 40, 20);
-        g.fillRect(20, (getHeight()) / 3 * 2 - 10, getWidth() - 40, 20);
+    private void drawCrossHatch(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setColor(BoardConfig.GRID_COLOR);
+        g2d.fillRect(getWidth() / 3 - BoardConfig.HALF_LINE_THICKNESS, BoardConfig.VERTICAL_OFFSET,
+                BoardConfig.LINE_THICKNESS, getHeight() - BoardConfig.VERTICAL_OFFSET_DOUBLED);
+        g2d.fillRect(getWidth() / 3 * 2 - BoardConfig.HALF_LINE_THICKNESS, BoardConfig.VERTICAL_OFFSET,
+                BoardConfig.LINE_THICKNESS, getHeight() - BoardConfig.VERTICAL_OFFSET_DOUBLED);
+        g2d.fillRect(BoardConfig.HORIZONTAL_OFFSET, getHeight() / 3 - BoardConfig.HALF_LINE_THICKNESS,
+                getWidth() - BoardConfig.HORIZONTAL_OFFSET_DOUBLED, BoardConfig.LINE_THICKNESS);
+        g2d.fillRect(BoardConfig.HORIZONTAL_OFFSET, getHeight() / 3 * 2 - BoardConfig.HALF_LINE_THICKNESS,
+                getWidth() - BoardConfig.HORIZONTAL_OFFSET_DOUBLED, BoardConfig.LINE_THICKNESS);
     }
 
     private void initGUI() {
-        setBackground(Color.BLACK);
-        setLayout(new GridBagLayout());
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        setBackground(BoardConfig.BACKGROUND_COLOR);
+        setLayout(new BorderLayout());
+        add(layeredPane, BorderLayout.CENTER);
 
+        tilePanel.setLayout(new GridBagLayout());
+        tilePanel.setOpaque(false);
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(30, 30, 30, 30);
+        gridBagConstraints.insets = new Insets(BoardConfig.TOP_INSET, BoardConfig.LEFT_INSET, BoardConfig.BOTTOM_INSET, BoardConfig.RIGHT_INSET);
         gridBagConstraints.gridwidth = 1;
         gridBagConstraints.gridheight = 1;
         gridBagConstraints.weightx = gridBagConstraints.weighty = 1.0;
         initializeTiles(gridBagConstraints);
 
-        glassPanel.setForeground(Color.cyan);
-        glassPanel.setOpaque(false);
-        glassPanel.setVisible(false);
-        jframe.setGlassPane(glassPanel);
+        winLinePanel.setOpaque(false);
+        winLinePanel.setVisible(false);
+        winLinePanel.setEnabled(false);
+
+        layeredPane.add(tilePanel, JLayeredPane.DEFAULT_LAYER);
+        layeredPane.add(winLinePanel, JLayeredPane.POPUP_LAYER);
+
+        winLinePanel.setBounds(0, 0, getWidth(), getHeight());
+
+        // Resize panels on window resize
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                tilePanel.setBounds(0, 0, getWidth(), getHeight());
+                winLinePanel.setBounds(0, 0, getWidth(), getHeight());
+            }
+        });
+
+
     }
 
     private void initializeTiles(GridBagConstraints gridBagConstraints) {
-        for (int column = 0; column < 3; ++column) {
-            for (int row = 0; row < 3; ++row) {
+        for (int column = 0; column < BoardConfig.BOARD_SIZE; ++column) {
+            for (int row = 0; row < BoardConfig.BOARD_SIZE; ++row) {
                 gridBagConstraints.gridx = column;
                 gridBagConstraints.gridy = row;
                 gameTiles[row][column] = new GameTile();
@@ -140,14 +164,14 @@ public class GameBoardPanel extends JPanel {
                         }
                     }
                 });
-                add(gameTiles[row][column], gridBagConstraints);
+                tilePanel.add(gameTiles[row][column], gridBagConstraints);
             }
         }
     }
 
     private void playTilesSquare(GameTile tile) {
-        for (int row = 0; row < 3; ++row) {
-            for (int column = 0; column < 3; ++column) {
+        for (int row = 0; row < BoardConfig.BOARD_SIZE; ++row) {
+            for (int column = 0; column < BoardConfig.BOARD_SIZE; ++column) {
                 if (gameTiles[row][column] == tile) {
                     playSquare(row, column);
                 }
@@ -156,33 +180,30 @@ public class GameBoardPanel extends JPanel {
     }
 
     private void playSquare(int row, int column) {
-        Character xOrO = player.playSquare(row, column);
-        if (xOrO == null) {
+        Optional<TileValue> tileValue = player.makeMove(row, column);
+        if (tileValue.isEmpty()) {
             return;
         }
-        if (xOrO == 'x' || xOrO == 'o' || xOrO == ' ') {
-            gameTiles[row][column].setCurrentValue(xOrO);
-            repaint();
+        gameTiles[row][column].setCurrentValue(tileValue.get());
+        repaint();
 
-            String score = player.getScore();
-            if (!score.isEmpty()) {
-                displayWin(score);
-            }
+        String score = player.getScore();
+        if (!score.isEmpty()) {
+            displayWin(score);
         }
     }
 
     private void displayWin(String score) {
-        glassPanel.setVisible(true);
+        winLinePanel.setVisible(true);
         int n = JOptionPane.showConfirmDialog(this,
                 "Care to try again?",
                 score,
                 JOptionPane.YES_NO_OPTION);
-
-        glassPanel.setVisible(false);
+        winLinePanel.setVisible(false);
         if (n == 0) {
-            newGame();
+            listener.onNewGame();
         } else {
-            System.exit(0);
+            listener.onExit();
         }
     }
 }
