@@ -16,11 +16,16 @@ repositories {
 }
 
 dependencies {
-     testImplementation("org.spockframework:spock-core:$spockCoreVersion") {
-         exclude group: "org.codehaus.groovy", module: "groovy-all"
-     }
+    testImplementation("org.spockframework:spock-core:$spockCoreVersion")
 }
 
 test {
     useJUnitPlatform()
+}
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'com.small.tictactoe.App'
+        )
+    }
 }
