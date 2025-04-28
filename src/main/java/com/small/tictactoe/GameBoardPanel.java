@@ -23,7 +23,7 @@ public class GameBoardPanel extends JPanel {
     private final JLayeredPane layeredPane;
     private final JPanel tilePanel;
     private final JPanel winLinePanel;
-    private final GameEventListener listener;
+    private  GameEventListener listener;
 
     /**
      * @param player interface for handling game logic
@@ -42,7 +42,6 @@ public class GameBoardPanel extends JPanel {
         };
 
         initGUI();
-        newGame();
     }
 
     /**
@@ -53,6 +52,9 @@ public class GameBoardPanel extends JPanel {
         clearTable();
         winLinePanel.setVisible(false);
         repaint();
+        if (listener != null) {
+            listener.updateStatus();
+        }
     }
 
     private void clearTable() {
@@ -61,6 +63,21 @@ public class GameBoardPanel extends JPanel {
                 gameTiles[row][column].setCurrentValue(TileValue.EMPTY);
             }
         }
+    }
+
+    /**
+     * Sets the value of a tile at the specified row and column.
+     * @param row the row index
+     * @param column the column index
+     * @param value the tile value to set
+     */
+    public void setTileValue(int row, int column, TileValue value) {
+        gameTiles[row][column].setCurrentValue(value);
+        repaint();
+    }
+
+    public TileValue getTileValue(int row, int column) {
+        return gameTiles[row][column].getCurrentValue();
     }
 
     @Override
@@ -145,8 +162,6 @@ public class GameBoardPanel extends JPanel {
                 winLinePanel.setBounds(0, 0, getWidth(), getHeight());
             }
         });
-
-
     }
 
     private void initializeTiles(GridBagConstraints gridBagConstraints) {
@@ -180,30 +195,42 @@ public class GameBoardPanel extends JPanel {
     }
 
     private void playSquare(int row, int column) {
-        Optional<TileValue> tileValue = player.makeMove(row, column);
+        Optional<TileValue> tileValue = player.placeTile(row, column);
         if (tileValue.isEmpty()) {
-            return;
+            return; // Move invalid (tile occupied or game over)
         }
         gameTiles[row][column].setCurrentValue(tileValue.get());
         repaint();
 
-        String score = player.getScore();
-        if (!score.isEmpty()) {
-            displayWin(score);
+        GameResult result = player.getResult();
+        if (listener != null) {
+            listener.updateStatus();
+            listener.onMoveMade(row, column);
         }
+        displayWin(result.getDisplayText());
     }
 
-    private void displayWin(String score) {
+    public void displayWin(String score) {
+        if (score.isEmpty()) {
+            return;
+        }
         winLinePanel.setVisible(true);
-        int n = JOptionPane.showConfirmDialog(this,
+        int choice = JOptionPane.showConfirmDialog(this,
                 "Care to try again?",
                 score,
                 JOptionPane.YES_NO_OPTION);
         winLinePanel.setVisible(false);
-        if (n == 0) {
+        if (choice == JOptionPane.YES_OPTION) {
             listener.onNewGame();
         } else {
             listener.onExit();
         }
+    }
+
+    public GameEventListener getListener() {
+        return listener;
+    }
+    public void setListener(GameEventListener listener) {
+        this.listener = listener;
     }
 }

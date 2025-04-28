@@ -16,7 +16,7 @@ public interface TicTacToeGamePlayer {
      * Returns the current score or empty string if ongoing
      * @return score message
      */
-    String getScore();
+    GameResult getResult();
 
     /**
      *
@@ -56,7 +56,7 @@ public interface TicTacToeGamePlayer {
      * @param column column number
      * @return value on square
      */
-    Optional<TileValue> makeMove(int row, int column);
+    Optional<TileValue> placeTile(int row, int column);
 
     /**
      * begins a new game
