@@ -111,7 +111,7 @@ public class App extends JFrame implements GameEventListener {
 
     private void toggleGameMode(JButton toggleModeButton) {
         isSinglePlayer = !isSinglePlayer;
-        System.out.println("App.toggleGameMode: isSinglePlayer set to " + isSinglePlayer);
+        Logger.debug("App.toggleGameMode: isSinglePlayer set to " + isSinglePlayer);
         toggleModeButton.setText(isSinglePlayer ? "Two-Player Mode" : "Single-Player Mode");
         onNewGame();
     }
@@ -163,14 +163,14 @@ public class App extends JFrame implements GameEventListener {
 
     @Override
     public void onMoveMade(int row, int column, boolean isAIMove) {
-        System.out.println("App.onMoveMade: Received move at (" + row + ", " + column + "), isAIMove=" + isAIMove + ", isSinglePlayer=" + isSinglePlayer + ", currentPlayer=" + game.getCurrentPlayer() + ", gameResult=" + game.getResult());
+        Logger.debug("App.onMoveMade: Received move at (" + row + ", " + column + "), isAIMove=" + isAIMove + ", isSinglePlayer=" + isSinglePlayer + ", currentPlayer=" + game.getCurrentPlayer() + ", gameResult=" + game.getResult());
         if (isAIMove) {
             boardPanel.setTileForAI(row, column, TileValue.NOUGHT);
             awaitingAIMove = false;
         } else if (!awaitingAIMove) {
             boardPanel.playSquare(row, column);
         } else {
-            System.out.println("App.onMoveMade: Ignoring human move at (" + row + ", " + column + ") while awaiting AI move");
+            Logger.debug("App.onMoveMade: Ignoring human move at (" + row + ", " + column + ") while awaiting AI move");
             return;
         }
         updateStatus();

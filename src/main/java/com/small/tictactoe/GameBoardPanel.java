@@ -192,10 +192,10 @@ public class GameBoardPanel extends JPanel {
     }
 
     void playSquare(int row, int column) {
-        System.out.println("GameBoardPanel.playSquare: Processing move at (" + row + ", " + column + ")");
+        Logger.debug("GameBoardPanel.playSquare: Processing move at (" + row + ", " + column + ")");
         Optional<TileValue> tileValue = player.placeTile(row, column);
         if (tileValue.isEmpty()) {
-            System.out.println("GameBoardPanel.playSquare: Move invalid at (" + row + ", " + column + ")");
+            Logger.debug("GameBoardPanel.playSquare: Move invalid at (" + row + ", " + column + ")");
             return;
         }
         TileValue placedValue = tileValue.get();
@@ -203,7 +203,7 @@ public class GameBoardPanel extends JPanel {
         // Use displayValue for non-winning moves, placedValue for winning moves
         TileValue displayValue = (result == GameResult.ONGOING && placedValue == TileValue.CROSS) ? TileValue.NOUGHT :
                 (result == GameResult.ONGOING && placedValue == TileValue.NOUGHT) ? TileValue.CROSS : placedValue;
-        System.out.println("GameBoardPanel.playSquare: Placed " + displayValue + " at (" + row + ", " + column + ")");
+        Logger.debug("GameBoardPanel.playSquare: Placed " + displayValue + " at (" + row + ", " + column + ")");
         gameTiles[row][column].setCurrentValue(displayValue);
         repaint();
         if (listener != null) {

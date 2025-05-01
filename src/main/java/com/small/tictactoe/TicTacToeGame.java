@@ -24,7 +24,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer, BoardReader {
 //            TileValue placedPlayer = currentPlayer; // Store player before switch
 //            board[row][column] = placedPlayer;
 //            updateGameState();
-//            System.out.println("TicTacToeGame.placeTile: Placed " + placedPlayer + " at (" + row + ", " + column + "), result=" + result);
+//            Logger.debug("TicTacToeGame.placeTile: Placed " + placedPlayer + " at (" + row + ", " + column + "), result=" + result);
 //            return Optional.of(currentPlayer);
 //        }
 //        return Optional.empty();
@@ -47,7 +47,7 @@ public Optional<TileValue> placeTile(int row, int column) {
                 board[row][column] == TileValue.EMPTY &&
                 result == GameResult.ONGOING;
         if (!isValid) {
-            System.out.println("TicTacToeGame.isValidMove: Invalid move at (" + row + ", " + column + "), " +
+            Logger.debug("TicTacToeGame.isValidMove: Invalid move at (" + row + ", " + column + "), " +
                     "rowValid=" + (row >= 0 && row < 3) + ", " +
                     "colValid=" + (column >= 0 && column < 3) + ", " +
                     "tileEmpty=" + (board[row][column] == TileValue.EMPTY) + ", " +
@@ -147,7 +147,7 @@ public Optional<TileValue> placeTile(int row, int column) {
         }
         if (result == GameResult.ONGOING) {
             currentPlayer = (currentPlayer == TileValue.CROSS) ? TileValue.NOUGHT : TileValue.CROSS;
-            System.out.println("Tic Tac Toe Game.updateGameState: Switched to player=" + currentPlayer);
+            Logger.debug("Tic Tac Toe Game.updateGameState: Switched to player=" + currentPlayer);
         }
     }
 

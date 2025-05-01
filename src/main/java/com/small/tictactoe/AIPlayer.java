@@ -27,7 +27,7 @@ public class AIPlayer {
             logMove("Winning", winMove);
             return winMove;
         }
-        return null;
+        return new int[0];
     }
 
     private int[] findBlockingMove() {
@@ -36,7 +36,7 @@ public class AIPlayer {
             logMove("Blocking", blockMove);
             return blockMove;
         }
-        return null;
+        return new int[0];
     }
 
     private List<int[]> findEmptyTiles() {
@@ -56,20 +56,20 @@ public class AIPlayer {
     }
 
 //    void executeMove(int row, int col) {
-//        System.out.println("AIPlayer.executeMove: Attempting to place move at (" + row + ", " + col + ")");
+//        Logger.debug("AIPlayer.executeMove: Attempting to place move at (" + row + ", " + col + ")");
 //        Optional<TileValue> tileValue = game.placeTile(row, col);
 //        if (tileValue.isPresent()) {
-//            System.out.println("AIPlayer.executeMove: Successfully placed " + tileValue.get() + " at (" + row + ", " + col + ")");
+//            Logger.debug("AIPlayer.executeMove: Successfully placed " + tileValue.get() + " at (" + row + ", " + col + ")");
 //            listener.onMoveMade(row, col, true);
 //        } else {
-//            System.out.println("AI: Move failed at (" + row + ", " + col + ")");
+//            Logger.debug("AI: Move failed at (" + row + ", " + col + ")");
 //        }
 //    }
     public void executeMove() {
         // Iterate to find a valid empty tile
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 3; column++) {
-                System.out.println("AIPlayer.executeMove: Attempting to place move at (" + row + ", " + column + ")");
+                Logger.debug("AIPlayer.executeMove: Attempting to place move at (" + row + ", " + column + ")");
                 Optional<TileValue> result = game.placeTile(row, column);
                 if (result.isPresent()) {
                     if (listener != null) {
@@ -77,19 +77,19 @@ public class AIPlayer {
                     }
                     return;
                 }
-                System.out.println("AI: Move failed at (" + row + ", " + column + ")");
+                Logger.debug("AI: Move failed at (" + row + ", " + column + ")");
             }
         }
-        System.out.println("AIPlayer.executeMove: No valid moves available");
+        Logger.debug("AIPlayer.executeMove: No valid moves available");
     }
     private void logEmptyTiles(List<int[]> emptyTiles) {
-        System.out.println("AI: Empty tiles count = " + emptyTiles.size());
+        Logger.debug("AI: Empty tiles count = " + emptyTiles.size());
         for (int[] tile : emptyTiles) {
-            System.out.println("AI: Empty tile at (" + tile[0] + ", " + tile[1] + ")");
+            Logger.debug("AI: Empty tile at (" + tile[0] + ", " + tile[1] + ")");
         }
     }
 
     private void logMove(String type, int[] move) {
-        System.out.println("AI: " + type + " move at (" + move[0] + ", " + move[1] + ")");
+        Logger.debug("AI: " + type + " move at (" + move[0] + ", " + move[1] + ")");
     }
 }
