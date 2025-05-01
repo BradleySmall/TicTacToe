@@ -89,9 +89,34 @@ public class App extends JFrame implements GameEventListener {
         buttonPanel.add(createButton("New Game", e -> onNewGame()));
         buttonPanel.add(createButton("Reset Scores", e -> resetScores()));
         buttonPanel.add(createToggleModeButton());
+        buttonPanel.add(createButton("Undo", e -> onUndoMove()));
         return buttonPanel;
     }
+    private void onUndoMove() {
+        if (!(game instanceof TicTacToeGame realGame)) return;
 
+        boolean undone = false;
+
+        if (isSinglePlayer) {
+            // Undo AI move first (if present)
+            undone |= realGame.undoLastMove(); // AI move
+            awaitingAIMove = false;
+
+            // Then undo human move
+            undone |= realGame.undoLastMove(); // Player move
+        } else {
+            // Just undo one move in two-player mode
+            undone |= realGame.undoLastMove();
+        }
+
+        if (undone) {
+            boardPanel.refreshBoardFromGame();
+            updateStatus();
+            Logger.info("Undo successful.");
+        } else {
+            Logger.warn("Nothing to undo.");
+        }
+    }
     private JButton createButton(String text, java.awt.event.ActionListener listener) {
         JButton button = new JButton(text);
         button.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -129,9 +154,9 @@ public class App extends JFrame implements GameEventListener {
             TicTacToeGamePlayer game = new TicTacToeGame();
             GameBoardPanel boardPanel = new GameBoardPanel(game, null);
             ScoreTracker scoreTracker = new ScoreTracker();
-            App app = new App(game, boardPanel, scoreTracker, new AIPlayer((BoardReader) game, game, null));
+            App app = new App(game, boardPanel, scoreTracker, new AIPlayer((BoardReader) game, game, null, AIDifficulty.MEDIUM));
             boardPanel.setListener(app);
-            AIPlayer aiPlayer = new AIPlayer((BoardReader)game, game, app);
+            AIPlayer aiPlayer = new AIPlayer((BoardReader)game, game, app, AIDifficulty.MEDIUM);
             app.setAIPlayer(aiPlayer);
         });
     }
@@ -165,7 +190,7 @@ public class App extends JFrame implements GameEventListener {
     public void onMoveMade(int row, int column, boolean isAIMove) {
         Logger.debug("App.onMoveMade: Received move at (" + row + ", " + column + "), isAIMove=" + isAIMove + ", isSinglePlayer=" + isSinglePlayer + ", currentPlayer=" + game.getCurrentPlayer() + ", gameResult=" + game.getResult());
         if (isAIMove) {
-            boardPanel.setTileForAI(row, column, TileValue.NOUGHT);
+            boardPanel.refreshBoardFromGame(); // repaint based on actual game state
             awaitingAIMove = false;
         } else if (!awaitingAIMove) {
             boardPanel.playSquare(row, column);
@@ -174,7 +199,12 @@ public class App extends JFrame implements GameEventListener {
             return;
         }
         updateStatus();
-        if (game.getResult() == GameResult.ONGOING && isSinglePlayer && !isAIMove) {
+        if (game.getResult() != GameResult.ONGOING) {
+            boardPanel.displayWin(game.getResult().getDisplayText());
+            return; // Don’t try to trigger another move
+        }
+
+        if (isSinglePlayer && !isAIMove) {
             awaitingAIMove = true;
             aiPlayer.executeMove();
         }

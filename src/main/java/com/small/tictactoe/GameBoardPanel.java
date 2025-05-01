@@ -56,7 +56,14 @@ public class GameBoardPanel extends JPanel {
             listener.updateStatus();
         }
     }
-
+    void refreshBoardFromGame() {
+        for (int row = 0; row < BoardConfig.BOARD_SIZE; row++) {
+            for (int col = 0; col < BoardConfig.BOARD_SIZE; col++) {
+                gameTiles[row][col].setCurrentValue(((TicTacToeGame)player).getTileValue(row, col));
+            }
+        }
+        repaint();
+    }
     private void clearTable() {
         for (int row = 0; row < BoardConfig.BOARD_SIZE; ++row) {
             for (int column = 0; column < BoardConfig.BOARD_SIZE; ++column) {
@@ -201,8 +208,12 @@ public class GameBoardPanel extends JPanel {
         TileValue placedValue = tileValue.get();
         GameResult result = player.getResult();
         // Use displayValue for non-winning moves, placedValue for winning moves
-        TileValue displayValue = (result == GameResult.ONGOING && placedValue == TileValue.CROSS) ? TileValue.NOUGHT :
-                (result == GameResult.ONGOING && placedValue == TileValue.NOUGHT) ? TileValue.CROSS : placedValue;
+        TileValue displayValue;
+        if (result == GameResult.ONGOING && (placedValue == TileValue.CROSS || placedValue == TileValue.NOUGHT)) {
+            displayValue = (placedValue == TileValue.CROSS) ? TileValue.NOUGHT : TileValue.CROSS;
+        } else {
+            displayValue = placedValue;
+        }
         Logger.debug("GameBoardPanel.playSquare: Placed " + displayValue + " at (" + row + ", " + column + ")");
         gameTiles[row][column].setCurrentValue(displayValue);
         repaint();
@@ -236,9 +247,5 @@ public class GameBoardPanel extends JPanel {
 
     public void setListener(GameEventListener listener) {
         this.listener = listener;
-    }
-    public void setTileForAI(int row, int column, TileValue tileValue) {
-        gameTiles[row][column].setCurrentValue(tileValue);
-        repaint();
     }
 }

@@ -11,6 +11,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer, BoardReader {
     private int winRow;
     private int winColumn;
     private final LineChecker lineChecker;
+    private final MoveHistory moveHistory = new MoveHistory();
 
     public TicTacToeGame() {
         this.board = new TileValue[BoardConfig.BOARD_SIZE][BoardConfig.BOARD_SIZE];
@@ -19,41 +20,28 @@ public class TicTacToeGame implements TicTacToeGamePlayer, BoardReader {
     }
 
     @Override
-//    public Optional<TileValue> placeTile(int row, int column) {
-//        if (isValidMove(row, column)) {
-//            TileValue placedPlayer = currentPlayer; // Store player before switch
-//            board[row][column] = placedPlayer;
-//            updateGameState();
-//            Logger.debug("TicTacToeGame.placeTile: Placed " + placedPlayer + " at (" + row + ", " + column + "), result=" + result);
-//            return Optional.of(currentPlayer);
-//        }
-//        return Optional.empty();
-//    }
-public Optional<TileValue> placeTile(int row, int column) {
-    validateCoordinates(row, column);
-    if (result != GameResult.ONGOING || board[row][column] != TileValue.EMPTY) {
-        return Optional.empty();
-    }
-    TileValue placedPlayer = currentPlayer;
-    board[row][column] = placedPlayer;
-    updateGameState();
-    return Optional.of(currentPlayer);
-}
-
-
-    private boolean isValidMove(int row, int column) {
-        boolean isValid = row >= 0 && row < 3 &&
-                column >= 0 && column < 3 &&
-                board[row][column] == TileValue.EMPTY &&
-                result == GameResult.ONGOING;
-        if (!isValid) {
-            Logger.debug("TicTacToeGame.isValidMove: Invalid move at (" + row + ", " + column + "), " +
-                    "rowValid=" + (row >= 0 && row < 3) + ", " +
-                    "colValid=" + (column >= 0 && column < 3) + ", " +
-                    "tileEmpty=" + (board[row][column] == TileValue.EMPTY) + ", " +
-                    "gameOngoing=" + (result == GameResult.ONGOING));
+    public Optional<TileValue> placeTile(int row, int column) {
+        validateCoordinates(row, column);
+        if (result != GameResult.ONGOING || board[row][column] != TileValue.EMPTY) {
+            return Optional.empty();
         }
-        return isValid;
+        TileValue placedPlayer = currentPlayer;
+
+        board[row][column] = placedPlayer;
+        moveHistory.addMove(row, column, currentPlayer);
+        updateGameState();
+        return Optional.of(currentPlayer);
+    }
+    public boolean undoLastMove() {
+        MoveHistory.Move last = moveHistory.undoLastMove();
+        if (last == null || result != GameResult.ONGOING) return false;
+
+        board[last.row][last.col] = TileValue.EMPTY;
+        currentPlayer = last.player;
+        winDirection = WinDirection.NONE;
+        winRow = -1;
+        winColumn = -1;
+        return true;
     }
 
     @Override
@@ -175,7 +163,7 @@ public Optional<TileValue> placeTile(int row, int column) {
             winColumn = lineIndex - 3;
         } else { // Diagonals
             winDirection = WinDirection.DIAGONAL;
-            winRow = (lineIndex == 6) ? 0 : 0;
+            winRow = 0;
             winColumn = (lineIndex == 6) ? 0 : 2;
         }
     }

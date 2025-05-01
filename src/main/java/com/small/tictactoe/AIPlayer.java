@@ -13,30 +13,14 @@ public class AIPlayer {
     private final GameEventListener listener;
     private final Random random;
     private final LineChecker lineChecker;
+    private final AIDifficulty difficulty;
 
-    public AIPlayer(BoardReader board, TicTacToeGamePlayer game, GameEventListener listener) {
+    public AIPlayer(BoardReader board, TicTacToeGamePlayer game, GameEventListener listener, AIDifficulty difficulty) {
         this.game = game;
         this.listener = listener;
         this.random = new Random();
+        this.difficulty = difficulty;
         this.lineChecker = new LineChecker(board);
-    }
-
-    private int[] findWinningMove() {
-        int[] winMove = findStrategicMove(TileValue.NOUGHT);
-        if (winMove.length != 0) {
-            logMove("Winning", winMove);
-            return winMove;
-        }
-        return new int[0];
-    }
-
-    private int[] findBlockingMove() {
-        int[] blockMove = findStrategicMove(TileValue.CROSS);
-        if (blockMove.length != 0) {
-            logMove("Blocking", blockMove);
-            return blockMove;
-        }
-        return new int[0];
     }
 
     private List<int[]> findEmptyTiles() {
@@ -55,41 +39,36 @@ public class AIPlayer {
         return lineChecker.findPatternMove(tileValue);
     }
 
-//    void executeMove(int row, int col) {
-//        Logger.debug("AIPlayer.executeMove: Attempting to place move at (" + row + ", " + col + ")");
-//        Optional<TileValue> tileValue = game.placeTile(row, col);
-//        if (tileValue.isPresent()) {
-//            Logger.debug("AIPlayer.executeMove: Successfully placed " + tileValue.get() + " at (" + row + ", " + col + ")");
-//            listener.onMoveMade(row, col, true);
-//        } else {
-//            Logger.debug("AI: Move failed at (" + row + ", " + col + ")");
-//        }
-//    }
     public void executeMove() {
-        // Iterate to find a valid empty tile
-        for (int row = 0; row < 3; row++) {
-            for (int column = 0; column < 3; column++) {
-                Logger.debug("AIPlayer.executeMove: Attempting to place move at (" + row + ", " + column + ")");
-                Optional<TileValue> result = game.placeTile(row, column);
-                if (result.isPresent()) {
-                    if (listener != null) {
-                        listener.onMoveMade(row, column, true);
-                    }
-                    return;
-                }
-                Logger.debug("AI: Move failed at (" + row + ", " + column + ")");
-            }
-        }
-        Logger.debug("AIPlayer.executeMove: No valid moves available");
-    }
-    private void logEmptyTiles(List<int[]> emptyTiles) {
-        Logger.debug("AI: Empty tiles count = " + emptyTiles.size());
-        for (int[] tile : emptyTiles) {
-            Logger.debug("AI: Empty tile at (" + tile[0] + ", " + tile[1] + ")");
-        }
-    }
+        int[] move = null;
 
-    private void logMove(String type, int[] move) {
-        Logger.debug("AI: " + type + " move at (" + move[0] + ", " + move[1] + ")");
+        // Try to win
+        if (difficulty == AIDifficulty.HARD || difficulty == AIDifficulty.MEDIUM) {
+            move = findStrategicMove(TileValue.NOUGHT);
+        }
+
+        // Try to block
+        if ((move == null || move.length == 0) && difficulty != AIDifficulty.EASY) {
+            move = findStrategicMove(TileValue.CROSS);
+        }
+
+        // Fallback to random
+        if (move == null || move.length == 0) {
+            move = chooseRandomMove();
+        }
+
+        if (move != null && move.length == 2) {
+            Logger.debug("AI (" + difficulty + ") executing move at (" + move[0] + ", " + move[1] + ")");
+            Optional<TileValue> result = game.placeTile(move[0], move[1]);
+            if (result.isPresent() && listener != null) {
+                listener.onMoveMade(move[0], move[1], true);
+            }
+        } else {
+            Logger.warn("AI could not find a valid move.");
+        }
+    }
+    private int[] chooseRandomMove() {
+        List<int[]> emptyTiles = findEmptyTiles();
+        return emptyTiles.isEmpty() ? null : emptyTiles.get(random.nextInt(emptyTiles.size()));
     }
 }
