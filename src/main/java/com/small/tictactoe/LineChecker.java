@@ -33,105 +33,16 @@ public class LineChecker {
     private List<Line> initializeLines() {
         return Arrays.asList(
                 // Rows
-                new Line() {
-                    @Override
-                    public TileValue[] getTiles() {
-                        return new TileValue[]{
-                                game.getTileValue(0, 0), game.getTileValue(0, 1), game.getTileValue(0, 2)
-                        };
-                    }
-                    @Override
-                    public int[] toBoardCoordinates(int index) {
-                        return new int[]{0, index};
-                    }
-                },
-                new Line() {
-                    @Override
-                    public TileValue[] getTiles() {
-                        return new TileValue[]{
-                                game.getTileValue(1, 0), game.getTileValue(1, 1), game.getTileValue(1, 2)
-                        };
-                    }
-                    @Override
-                    public int[] toBoardCoordinates(int index) {
-                        return new int[]{1, index};
-                    }
-                },
-                new Line() {
-                    @Override
-                    public TileValue[] getTiles() {
-                        return new TileValue[]{
-                                game.getTileValue(2, 0), game.getTileValue(2, 1), game.getTileValue(2, 2)
-                        };
-                    }
-                    @Override
-                    public int[] toBoardCoordinates(int index) {
-                        return new int[]{2, index};
-                    }
-                },
+                new ConcreteLine(game, ConcreteLine.LineType.ROW, 0),
+                new ConcreteLine(game, ConcreteLine.LineType.ROW, 1),
+                new ConcreteLine(game, ConcreteLine.LineType.ROW, 2),
                 // Columns
-                new Line() {
-                    @Override
-                    public TileValue[] getTiles() {
-                        return new TileValue[]{
-                                game.getTileValue(0, 0), game.getTileValue(1, 0), game.getTileValue(2, 0)
-                        };
-                    }
-                    @Override
-                    public int[] toBoardCoordinates(int index) {
-                        return new int[]{index, 0};
-                    }
-                },
-                new Line() {
-                    @Override
-                    public TileValue[] getTiles() {
-                        return new TileValue[]{
-                                game.getTileValue(0, 1), game.getTileValue(1, 1), game.getTileValue(2, 1)
-                        };
-                    }
-                    @Override
-                    public int[] toBoardCoordinates(int index) {
-                        return new int[]{index, 1};
-                    }
-                },
-                new Line() {
-                    @Override
-                    public TileValue[] getTiles() {
-                        return new TileValue[]{
-                                game.getTileValue(0, 2), game.getTileValue(1, 2), game.getTileValue(2, 2)
-                        };
-                    }
-                    @Override
-                    public int[] toBoardCoordinates(int index) {
-                        return new int[]{index, 2};
-                    }
-                },
-                // Main diagonal (0,0 -> 2,2)
-                new Line() {
-                    @Override
-                    public TileValue[] getTiles() {
-                        return new TileValue[]{
-                                game.getTileValue(0, 0), game.getTileValue(1, 1), game.getTileValue(2, 2)
-                        };
-                    }
-                    @Override
-                    public int[] toBoardCoordinates(int index) {
-                        return new int[]{index, index};
-                    }
-                },
-                // Anti-diagonal (0,2 -> 2,0)
-                new Line() {
-                    @Override
-                    public TileValue[] getTiles() {
-                        return new TileValue[]{
-                                game.getTileValue(0, 2), game.getTileValue(1, 1), game.getTileValue(2, 0)
-                        };
-                    }
-                    @Override
-                    public int[] toBoardCoordinates(int index) {
-                        return new int[]{index, 2 - index};
-                    }
-                }
+                new ConcreteLine(game, ConcreteLine.LineType.COLUMN, 0),
+                new ConcreteLine(game, ConcreteLine.LineType.COLUMN, 1),
+                new ConcreteLine(game, ConcreteLine.LineType.COLUMN, 2),
+                // Diagonals
+                new ConcreteLine(game, ConcreteLine.LineType.MAIN_DIAGONAL, 0),
+                new ConcreteLine(game, ConcreteLine.LineType.ANTI_DIAGONAL, 1)
         );
     }
 

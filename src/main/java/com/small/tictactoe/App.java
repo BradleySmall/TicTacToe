@@ -14,13 +14,14 @@ import java.util.Objects;
  * Main application class for the Tic-Tac-Toe game, responsible for GUI setup and event coordination.
  */
 public class App extends JFrame implements GameEventListener {
-    private final TicTacToeGamePlayer game;
+    private final transient TicTacToeGamePlayer game;
     private final GameBoardPanel boardPanel;
     private final JLabel statusLabel;
     private final JLabel scoreLabel;
-    private final ScoreTracker scoreTracker;
-    private final AIPlayer aiPlayer;
+    private final transient ScoreTracker scoreTracker;
+    private transient AIPlayer aiPlayer;
     private boolean isSinglePlayer;
+    private boolean awaitingAIMove; // Prevent human moves during AI turn
 
     /**
      * Constructs the application with dependencies and initializes the GUI.
@@ -34,6 +35,7 @@ public class App extends JFrame implements GameEventListener {
         this.scoreLabel = new JLabel(scoreTracker.getScoreDisplay());
         this.isSinglePlayer = false;
         initGUI();
+        this.awaitingAIMove = false;
     }
 
     /**
@@ -101,13 +103,15 @@ public class App extends JFrame implements GameEventListener {
     }
 
     private JButton createToggleModeButton() {
-        JButton toggleModeButton = createButton("Single-Player Mode", e -> {});
+        JButton toggleModeButton = createButton("Single-Player Mode", e -> {
+        });
         toggleModeButton.addActionListener(e -> toggleGameMode(toggleModeButton));
         return toggleModeButton;
     }
 
     private void toggleGameMode(JButton toggleModeButton) {
         isSinglePlayer = !isSinglePlayer;
+        System.out.println("App.toggleGameMode: isSinglePlayer set to " + isSinglePlayer);
         toggleModeButton.setText(isSinglePlayer ? "Two-Player Mode" : "Single-Player Mode");
         onNewGame();
     }
@@ -125,14 +129,20 @@ public class App extends JFrame implements GameEventListener {
             TicTacToeGamePlayer game = new TicTacToeGame();
             GameBoardPanel boardPanel = new GameBoardPanel(game, null);
             ScoreTracker scoreTracker = new ScoreTracker();
-            AIPlayer aiPlayer = new AIPlayer(game, boardPanel);
-            App app = new App(game, boardPanel, scoreTracker, aiPlayer);
+            App app = new App(game, boardPanel, scoreTracker, new AIPlayer(game, null));
             boardPanel.setListener(app);
+            AIPlayer aiPlayer = new AIPlayer(game, app);
+            app.setAIPlayer(aiPlayer);
         });
+    }
+
+    public void setAIPlayer(AIPlayer aiPlayer) {
+        this.aiPlayer = aiPlayer;
     }
 
     @Override
     public void onNewGame() {
+        awaitingAIMove = false;
         scoreTracker.updateScore(game.getResult());
         scoreLabel.setText(scoreTracker.getScoreDisplay());
         boardPanel.newGame();
@@ -152,12 +162,21 @@ public class App extends JFrame implements GameEventListener {
     }
 
     @Override
-    public void onMoveMade(int row, int column) {
-        if (isSinglePlayer && game.getResult() != GameResult.ONGOING) {
-            return; // Game over, no AI move
+    public void onMoveMade(int row, int column, boolean isAIMove) {
+        System.out.println("App.onMoveMade: Received move at (" + row + ", " + column + "), isAIMove=" + isAIMove + ", isSinglePlayer=" + isSinglePlayer + ", currentPlayer=" + game.getCurrentPlayer() + ", gameResult=" + game.getResult());
+        if (isAIMove) {
+            boardPanel.setTileForAI(row, column, TileValue.NOUGHT);
+            awaitingAIMove = false;
+        } else if (!awaitingAIMove) {
+            boardPanel.playSquare(row, column);
+        } else {
+            System.out.println("App.onMoveMade: Ignoring human move at (" + row + ", " + column + ") while awaiting AI move");
+            return;
         }
-        if (isSinglePlayer && game.getCurrentPlayer() == TileValue.NOUGHT) {
-            aiPlayer.makeMove();
+        updateStatus();
+        if (game.getResult() == GameResult.ONGOING && isSinglePlayer && !isAIMove) {
+            awaitingAIMove = true;
+            aiPlayer.executeMove();
         }
     }
 }

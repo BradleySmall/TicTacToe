@@ -4,5 +4,5 @@ public interface GameEventListener {
     void onNewGame();
     void onExit();
     void updateStatus();
-    void onMoveMade(int row, int column);
+    void onMoveMade(int row, int column, boolean isAIMove);
 }

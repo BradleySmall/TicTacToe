@@ -23,7 +23,7 @@ public class GameBoardPanel extends JPanel {
     private final JLayeredPane layeredPane;
     private final JPanel tilePanel;
     private final JPanel winLinePanel;
-    private  GameEventListener listener;
+    private  transient GameEventListener listener;
 
     /**
      * @param player interface for handling game logic
@@ -65,21 +65,6 @@ public class GameBoardPanel extends JPanel {
         }
     }
 
-    /**
-     * Sets the value of a tile at the specified row and column.
-     * @param row the row index
-     * @param column the column index
-     * @param value the tile value to set
-     */
-    public void setTileValue(int row, int column, TileValue value) {
-        gameTiles[row][column].setCurrentValue(value);
-        repaint();
-    }
-
-    public TileValue getTileValue(int row, int column) {
-        return gameTiles[row][column].getCurrentValue();
-    }
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -96,23 +81,35 @@ public class GameBoardPanel extends JPanel {
         if (winDirection == WinDirection.NONE) return;
 
         if (winDirection == WinDirection.ROW) {
-            int y = getHeight() / 6 * (2 * winRow + 1) - BoardConfig.HALF_LINE_THICKNESS;
-            g2d.fillRect(BoardConfig.HORIZONTAL_OFFSET, y,
-                    getWidth() - BoardConfig.HORIZONTAL_OFFSET_DOUBLED, BoardConfig.LINE_THICKNESS);
+            drawRowWinLine(winRow, g2d);
         } else if (winDirection == WinDirection.COLUMN) {
-            int x = getWidth() / 6 * (2 * winColumn + 1) - BoardConfig.HALF_LINE_THICKNESS;
-            g2d.fillRect(x, BoardConfig.VERTICAL_OFFSET,
-                    BoardConfig.LINE_THICKNESS, getHeight() - BoardConfig.VERTICAL_OFFSET_DOUBLED);
+            drawColumnWinLine(winColumn, g2d);
         } else if (winDirection == WinDirection.DIAGONAL) {
-            int[] x = {TileConfig.CROSS_LATERAL_OFFSET, TileConfig.CROSS_BAR_WIDTH,
-                    getWidth() - TileConfig.CROSS_LATERAL_OFFSET, getWidth() - TileConfig.CROSS_BAR_WIDTH};
-            int[] y = winColumn == 0 ?
-                    new int[]{TileConfig.CROSS_BAR_WIDTH, TileConfig.CROSS_VERTICAL_OFFSET,
-                            getHeight() - TileConfig.CROSS_BAR_WIDTH, getHeight() - TileConfig.CROSS_VERTICAL_OFFSET} :
-                    new int[]{getHeight() - TileConfig.CROSS_BAR_WIDTH, getHeight() - TileConfig.CROSS_VERTICAL_OFFSET,
-                            TileConfig.CROSS_BAR_WIDTH, TileConfig.CROSS_VERTICAL_OFFSET};
-            g2d.fillPolygon(new Polygon(x, y, TileConfig.NUMBER_CROSS_BAR_POINTS));
+            drawDiagonalWinLine(winColumn, g2d);
         }
+    }
+
+    private void drawDiagonalWinLine(int winColumn, Graphics2D g2d) {
+        int[] xPoints = {TileConfig.CROSS_LATERAL_OFFSET, TileConfig.CROSS_BAR_WIDTH,
+                getWidth() - TileConfig.CROSS_LATERAL_OFFSET, getWidth() - TileConfig.CROSS_BAR_WIDTH};
+        int[] yPoints = winColumn == 0 ?
+                new int[]{TileConfig.CROSS_BAR_WIDTH, TileConfig.CROSS_VERTICAL_OFFSET,
+                        getHeight() - TileConfig.CROSS_BAR_WIDTH, getHeight() - TileConfig.CROSS_VERTICAL_OFFSET} :
+                new int[]{getHeight() - TileConfig.CROSS_BAR_WIDTH, getHeight() - TileConfig.CROSS_VERTICAL_OFFSET,
+                        TileConfig.CROSS_BAR_WIDTH, TileConfig.CROSS_VERTICAL_OFFSET};
+        g2d.fillPolygon(new Polygon(xPoints, yPoints, TileConfig.NUMBER_CROSS_BAR_POINTS));
+    }
+
+    private void drawColumnWinLine(int winColumn, Graphics2D g2d) {
+        int x = getWidth() / 6 * (2 * winColumn + 1) - BoardConfig.HALF_LINE_THICKNESS;
+        g2d.fillRect(x, BoardConfig.VERTICAL_OFFSET,
+                BoardConfig.LINE_THICKNESS, getHeight() - BoardConfig.VERTICAL_OFFSET_DOUBLED);
+    }
+
+    private void drawRowWinLine(int winRow, Graphics2D g2d) {
+        int y = getHeight() / 6 * (2 * winRow + 1) - BoardConfig.HALF_LINE_THICKNESS;
+        g2d.fillRect(BoardConfig.HORIZONTAL_OFFSET, y,
+                getWidth() - BoardConfig.HORIZONTAL_OFFSET_DOUBLED, BoardConfig.LINE_THICKNESS);
     }
 
 
@@ -194,21 +191,30 @@ public class GameBoardPanel extends JPanel {
         }
     }
 
-    private void playSquare(int row, int column) {
+    void playSquare(int row, int column) {
+        System.out.println("GameBoardPanel.playSquare: Processing move at (" + row + ", " + column + ")");
         Optional<TileValue> tileValue = player.placeTile(row, column);
         if (tileValue.isEmpty()) {
-            return; // Move invalid (tile occupied or game over)
+            System.out.println("GameBoardPanel.playSquare: Move invalid at (" + row + ", " + column + ")");
+            return;
         }
-        gameTiles[row][column].setCurrentValue(tileValue.get());
-        repaint();
-
+        TileValue placedValue = tileValue.get();
         GameResult result = player.getResult();
+        // Use displayValue for non-winning moves, placedValue for winning moves
+        TileValue displayValue = (result == GameResult.ONGOING && placedValue == TileValue.CROSS) ? TileValue.NOUGHT :
+                (result == GameResult.ONGOING && placedValue == TileValue.NOUGHT) ? TileValue.CROSS : placedValue;
+        System.out.println("GameBoardPanel.playSquare: Placed " + displayValue + " at (" + row + ", " + column + ")");
+        gameTiles[row][column].setCurrentValue(displayValue);
+        repaint();
         if (listener != null) {
             listener.updateStatus();
-            listener.onMoveMade(row, column);
+            listener.onMoveMade(row, column, false);
         }
-        displayWin(result.getDisplayText());
+        if (result != GameResult.ONGOING) {
+            displayWin(result.getDisplayText());
+        }
     }
+
 
     public void displayWin(String score) {
         if (score.isEmpty()) {
@@ -227,10 +233,12 @@ public class GameBoardPanel extends JPanel {
         }
     }
 
-    public GameEventListener getListener() {
-        return listener;
-    }
+
     public void setListener(GameEventListener listener) {
         this.listener = listener;
+    }
+    public void setTileForAI(int row, int column, TileValue tileValue) {
+        gameTiles[row][column].setCurrentValue(tileValue);
+        repaint();
     }
 }

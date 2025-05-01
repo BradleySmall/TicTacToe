@@ -10,7 +10,11 @@ import javax.swing.*;
 import java.awt.*;
 
 public class GameTile extends JPanel {
-    private TileValue currentValue = TileValue.EMPTY;
+    private TileValue currentValue;
+
+    public GameTile() {
+        this.currentValue = TileValue.EMPTY;
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -62,9 +66,6 @@ public class GameTile extends JPanel {
      * @param currentValue the value to set
      */
     public void setCurrentValue(TileValue currentValue) {
-        if (currentValue == null) {
-            throw new IllegalArgumentException("Cannot set tile to null");
-        }
         this.currentValue = currentValue;
     }
 

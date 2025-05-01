@@ -20,15 +20,41 @@ public class TicTacToeGame implements TicTacToeGamePlayer {
 
     @Override
     public Optional<TileValue> placeTile(int row, int column) {
-        validateCoordinates(row, column);
-        if (result != GameResult.ONGOING || board[row][column] != TileValue.EMPTY) {
-            return Optional.empty();
+        if (isValidMove(row, column)) {
+            TileValue placedPlayer = currentPlayer; // Store player before switch
+            board[row][column] = placedPlayer;
+            updateGameState();
+            System.out.println("TicTacToeGame.placeTile: Placed " + placedPlayer + " at (" + row + ", " + column + "), result=" + result);
+            return Optional.of(currentPlayer);
         }
-        TileValue placedValue = currentPlayer;
-        board[row][column] = placedValue;
-        updateGameState();
-        return Optional.of(placedValue);
+        return Optional.empty();
     }
+
+    private boolean isValidMove(int row, int column) {
+        boolean isValid = row >= 0 && row < 3 &&
+                column >= 0 && column < 3 &&
+                board[row][column] == TileValue.EMPTY &&
+                result == GameResult.ONGOING;
+        if (!isValid) {
+            System.out.println("TicTacToeGame.isValidMove: Invalid move at (" + row + ", " + column + "), " +
+                    "rowValid=" + (row >= 0 && row < 3) + ", " +
+                    "colValid=" + (column >= 0 && column < 3) + ", " +
+                    "tileEmpty=" + (board[row][column] == TileValue.EMPTY) + ", " +
+                    "gameOngoing=" + (result == GameResult.ONGOING));
+        }
+        return isValid;
+    }
+
+    // public Optional<TileValue> placeTile(int row, int column) {
+    //     validateCoordinates(row, column);
+    //     if (result != GameResult.ONGOING || board[row][column] != TileValue.EMPTY) {
+    //         return Optional.empty();
+    //     }
+    //     TileValue placedValue = currentPlayer;
+    //     board[row][column] = placedValue;
+    //     updateGameState();
+    //     return Optional.of(placedValue);
+    // }
 
     @Override
     public void newGame() {
@@ -121,6 +147,7 @@ public class TicTacToeGame implements TicTacToeGamePlayer {
         }
         if (result == GameResult.ONGOING) {
             currentPlayer = (currentPlayer == TileValue.CROSS) ? TileValue.NOUGHT : TileValue.CROSS;
+            System.out.println("Tic Tac Toe Game.updateGameState: Switched to player=" + currentPlayer);
         }
     }
 
@@ -131,13 +158,13 @@ public class TicTacToeGame implements TicTacToeGamePlayer {
             if (tiles[0] != TileValue.EMPTY && tiles[0] == tiles[1] && tiles[1] == tiles[2]) {
                 TileValue winner = tiles[0];
                 result = (winner == TileValue.CROSS) ? GameResult.WIN_CROSS : GameResult.WIN_NOUGHT;
-                setWinDetails(i, line);
+                setWinDetails(i);
                 return;
             }
         }
     }
 
-    private void setWinDetails(int lineIndex, Line line) {
+    private void setWinDetails(int lineIndex) {
         if (lineIndex < 3) { // Rows
             winDirection = WinDirection.ROW;
             winRow = lineIndex;

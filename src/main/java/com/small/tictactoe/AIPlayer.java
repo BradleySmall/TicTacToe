@@ -10,45 +10,33 @@ import java.util.Random;
  */
 public class AIPlayer {
     private final TicTacToeGamePlayer game;
-    private final GameBoardPanel boardPanel; // Still needed for UI updates
+    private final GameEventListener listener;
     private final Random random;
     private final LineChecker lineChecker;
 
-    public AIPlayer(TicTacToeGamePlayer game, GameBoardPanel boardPanel) {
+    public AIPlayer(TicTacToeGamePlayer game, GameEventListener listener) {
         this.game = game;
-        this.boardPanel = boardPanel;
+        this.listener = listener;
         this.random = new Random();
         this.lineChecker = new LineChecker((TicTacToeGame) game);
     }
 
-    /**
-     * Makes a strategic move for Player O (win, block, or random).
-     */
-    public void makeMove() {
-        List<int[]> emptyTiles = findEmptyTiles();
-        logEmptyTiles(emptyTiles);
-
+    private int[] findWinningMove() {
         int[] winMove = findStrategicMove(TileValue.NOUGHT);
         if (winMove.length != 0) {
             logMove("Winning", winMove);
-            executeMove(winMove[0], winMove[1]);
-            return;
+            return winMove;
         }
+        return null;
+    }
 
+    private int[] findBlockingMove() {
         int[] blockMove = findStrategicMove(TileValue.CROSS);
         if (blockMove.length != 0) {
             logMove("Blocking", blockMove);
-            executeMove(blockMove[0], blockMove[1]);
-            return;
+            return blockMove;
         }
-
-        if (!emptyTiles.isEmpty()) {
-            int[] move = emptyTiles.get(random.nextInt(emptyTiles.size()));
-            logMove("Random", move);
-            executeMove(move[0], move[1]);
-        } else {
-            System.out.println("AI: No empty tiles available");
-        }
+        return null;
     }
 
     private List<int[]> findEmptyTiles() {
@@ -67,22 +55,33 @@ public class AIPlayer {
         return lineChecker.findPatternMove(tileValue);
     }
 
-    private void executeMove(int row, int col) {
-        Optional<TileValue> tileValue = game.placeTile(row, col);
-        if (tileValue.isPresent()) {
-            boardPanel.setTileValue(row, col, tileValue.get());
-            boardPanel.repaint();
-            boardPanel.getListener().updateStatus();
-            GameResult result = game.getResult();
-            if (result != GameResult.ONGOING) {
-                boardPanel.displayWin(result.getDisplayText());
+//    void executeMove(int row, int col) {
+//        System.out.println("AIPlayer.executeMove: Attempting to place move at (" + row + ", " + col + ")");
+//        Optional<TileValue> tileValue = game.placeTile(row, col);
+//        if (tileValue.isPresent()) {
+//            System.out.println("AIPlayer.executeMove: Successfully placed " + tileValue.get() + " at (" + row + ", " + col + ")");
+//            listener.onMoveMade(row, col, true);
+//        } else {
+//            System.out.println("AI: Move failed at (" + row + ", " + col + ")");
+//        }
+//    }
+    public void executeMove() {
+        // Iterate to find a valid empty tile
+        for (int row = 0; row < 3; row++) {
+            for (int column = 0; column < 3; column++) {
+                System.out.println("AIPlayer.executeMove: Attempting to place move at (" + row + ", " + column + ")");
+                Optional<TileValue> result = game.placeTile(row, column);
+                if (result.isPresent()) {
+                    if (listener != null) {
+                        listener.onMoveMade(row, column, true);
+                    }
+                    return;
+                }
+                System.out.println("AI: Move failed at (" + row + ", " + column + ")");
             }
-            System.out.println("AI: Move successful, placed " + tileValue.get() + " at (" + row + ", " + col + ")");
-        } else {
-            System.out.println("AI: Move failed at (" + row + ", " + col + ")");
         }
+        System.out.println("AIPlayer.executeMove: No valid moves available");
     }
-
     private void logEmptyTiles(List<int[]> emptyTiles) {
         System.out.println("AI: Empty tiles count = " + emptyTiles.size());
         for (int[] tile : emptyTiles) {
