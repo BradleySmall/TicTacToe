@@ -3,7 +3,7 @@ package com.small.tictactoe;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class TicTacToeGame implements TicTacToeGamePlayer {
+public class TicTacToeGame implements TicTacToeGamePlayer, BoardReader {
     private final TileValue[][] board;
     private TileValue currentPlayer;
     private GameResult result;
@@ -19,16 +19,27 @@ public class TicTacToeGame implements TicTacToeGamePlayer {
     }
 
     @Override
-    public Optional<TileValue> placeTile(int row, int column) {
-        if (isValidMove(row, column)) {
-            TileValue placedPlayer = currentPlayer; // Store player before switch
-            board[row][column] = placedPlayer;
-            updateGameState();
-            System.out.println("TicTacToeGame.placeTile: Placed " + placedPlayer + " at (" + row + ", " + column + "), result=" + result);
-            return Optional.of(currentPlayer);
-        }
+//    public Optional<TileValue> placeTile(int row, int column) {
+//        if (isValidMove(row, column)) {
+//            TileValue placedPlayer = currentPlayer; // Store player before switch
+//            board[row][column] = placedPlayer;
+//            updateGameState();
+//            System.out.println("TicTacToeGame.placeTile: Placed " + placedPlayer + " at (" + row + ", " + column + "), result=" + result);
+//            return Optional.of(currentPlayer);
+//        }
+//        return Optional.empty();
+//    }
+public Optional<TileValue> placeTile(int row, int column) {
+    validateCoordinates(row, column);
+    if (result != GameResult.ONGOING || board[row][column] != TileValue.EMPTY) {
         return Optional.empty();
     }
+    TileValue placedPlayer = currentPlayer;
+    board[row][column] = placedPlayer;
+    updateGameState();
+    return Optional.of(currentPlayer);
+}
+
 
     private boolean isValidMove(int row, int column) {
         boolean isValid = row >= 0 && row < 3 &&
@@ -44,17 +55,6 @@ public class TicTacToeGame implements TicTacToeGamePlayer {
         }
         return isValid;
     }
-
-    // public Optional<TileValue> placeTile(int row, int column) {
-    //     validateCoordinates(row, column);
-    //     if (result != GameResult.ONGOING || board[row][column] != TileValue.EMPTY) {
-    //         return Optional.empty();
-    //     }
-    //     TileValue placedValue = currentPlayer;
-    //     board[row][column] = placedValue;
-    //     updateGameState();
-    //     return Optional.of(placedValue);
-    // }
 
     @Override
     public void newGame() {

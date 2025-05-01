@@ -14,11 +14,11 @@ public class AIPlayer {
     private final Random random;
     private final LineChecker lineChecker;
 
-    public AIPlayer(TicTacToeGamePlayer game, GameEventListener listener) {
+    public AIPlayer(BoardReader board, TicTacToeGamePlayer game, GameEventListener listener) {
         this.game = game;
         this.listener = listener;
         this.random = new Random();
-        this.lineChecker = new LineChecker((TicTacToeGame) game);
+        this.lineChecker = new LineChecker(board);
     }
 
     private int[] findWinningMove() {

@@ -129,9 +129,9 @@ public class App extends JFrame implements GameEventListener {
             TicTacToeGamePlayer game = new TicTacToeGame();
             GameBoardPanel boardPanel = new GameBoardPanel(game, null);
             ScoreTracker scoreTracker = new ScoreTracker();
-            App app = new App(game, boardPanel, scoreTracker, new AIPlayer(game, null));
+            App app = new App(game, boardPanel, scoreTracker, new AIPlayer((BoardReader) game, game, null));
             boardPanel.setListener(app);
-            AIPlayer aiPlayer = new AIPlayer(game, app);
+            AIPlayer aiPlayer = new AIPlayer((BoardReader)game, game, app);
             app.setAIPlayer(aiPlayer);
         });
     }

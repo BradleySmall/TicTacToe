@@ -7,11 +7,11 @@ import java.util.List;
  * Checks Tic-Tac-Toe board lines for strategic move patterns.
  */
 public class LineChecker {
-    private final TicTacToeGame game;
+    private final BoardReader board;
     private final List<Line> lines;
 
-    public LineChecker(TicTacToeGame game) {
-        this.game = game;
+    public LineChecker(BoardReader board) {
+        this.board = board;
         this.lines = initializeLines();
     }
 
@@ -33,16 +33,16 @@ public class LineChecker {
     private List<Line> initializeLines() {
         return Arrays.asList(
                 // Rows
-                new ConcreteLine(game, ConcreteLine.LineType.ROW, 0),
-                new ConcreteLine(game, ConcreteLine.LineType.ROW, 1),
-                new ConcreteLine(game, ConcreteLine.LineType.ROW, 2),
+                new ConcreteLine(board, ConcreteLine.LineType.ROW, 0),
+                new ConcreteLine(board, ConcreteLine.LineType.ROW, 1),
+                new ConcreteLine(board, ConcreteLine.LineType.ROW, 2),
                 // Columns
-                new ConcreteLine(game, ConcreteLine.LineType.COLUMN, 0),
-                new ConcreteLine(game, ConcreteLine.LineType.COLUMN, 1),
-                new ConcreteLine(game, ConcreteLine.LineType.COLUMN, 2),
+                new ConcreteLine(board, ConcreteLine.LineType.COLUMN, 0),
+                new ConcreteLine(board, ConcreteLine.LineType.COLUMN, 1),
+                new ConcreteLine(board, ConcreteLine.LineType.COLUMN, 2),
                 // Diagonals
-                new ConcreteLine(game, ConcreteLine.LineType.MAIN_DIAGONAL, 0),
-                new ConcreteLine(game, ConcreteLine.LineType.ANTI_DIAGONAL, 1)
+                new ConcreteLine(board, ConcreteLine.LineType.MAIN_DIAGONAL, 0),
+                new ConcreteLine(board, ConcreteLine.LineType.ANTI_DIAGONAL, 1)
         );
     }
 

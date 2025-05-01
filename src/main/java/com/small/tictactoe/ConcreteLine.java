@@ -1,7 +1,7 @@
 package com.small.tictactoe;
 
 public class ConcreteLine implements Line {
-    private final TicTacToeGame game;
+    private final BoardReader board;
     private final LineType lineType;
     private final int index; // Row number, column number, or diagonal type (0 for main, 1 for anti)
 
@@ -9,8 +9,8 @@ public class ConcreteLine implements Line {
         ROW, COLUMN, MAIN_DIAGONAL, ANTI_DIAGONAL
     }
 
-    public ConcreteLine(TicTacToeGame game, LineType lineType, int index) {
-        this.game = game;
+    public ConcreteLine(BoardReader board, LineType lineType, int index) {
+        this.board = board;
         this.lineType = lineType;
         this.index = index;
     }
@@ -20,7 +20,7 @@ public class ConcreteLine implements Line {
         TileValue[] tiles = new TileValue[BoardConfig.BOARD_SIZE];
         for (int i = 0; i < BoardConfig.BOARD_SIZE; i++) {
             int[] coords = toBoardCoordinates(i);
-            tiles[i] = game.getTileValue(coords[0], coords[1]);
+            tiles[i] = board.getTileValue(coords[0], coords[1]);
         }
         return tiles;
     }
